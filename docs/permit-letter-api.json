@@ -1,0 +1,398 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "Permit Letter API",
+        "description": "Permit Letter API Specification",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8080"
+        }
+    ],
+    "paths": {
+        "/api/surat": {
+            "get": {
+                "description": "List all permits",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string"
+                                                    },
+                                                    "uraian": {
+                                                        "type": "string"
+                                                    },
+                                                    "no_surat": {
+                                                        "type": "string"
+                                                    },
+                                                    "kategori": {
+                                                        "type": "string"
+                                                    },
+                                                    "nama_perusahaan": {
+                                                        "type": "string"
+                                                    },
+                                                    "tanggal_masuk_berkas": {
+                                                        "type": "string",
+                                                        "format": "date"
+                                                    },
+                                                    "no_surat_izin_mabes": {
+                                                        "type": "string"
+                                                    },
+                                                    "status": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "Couldn't load surat izin"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Upload a new permit",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "uraian": {
+                                        "type": "string"
+                                    },
+                                    "no_surat": {
+                                        "type": "string"
+                                    },
+                                    "kategori": {
+                                        "type": "string"
+                                    },
+                                    "nama_perusahaan": {
+                                        "type": "string"
+                                    },
+                                    "tanggal_masuk_berkas": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "no_surat_izin_mabes": {
+                                        "type": "string"
+                                    },
+                                    "status": {
+                                        "type": "string"
+                                    },
+                                    "dokumen": {
+                                        "type": "string",
+                                        "description": "Base64 encoded PDF content"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "uraian": {
+                                                    "type": "string"
+                                                },
+                                                "no_surat": {
+                                                    "type": "string"
+                                                },
+                                                "kategori": {
+                                                    "type": "string"
+                                                },
+                                                "nama_perusahaan": {
+                                                    "type": "string"
+                                                },
+                                                "tanggal_masuk_berkas": {
+                                                    "type": "string",
+                                                    "format": "date"
+                                                },
+                                                "no_surat_izin_mabes": {
+                                                    "type": "string"
+                                                },
+                                                "status": {
+                                                    "type": "string"
+                                                },
+                                                "dokumen_url": {
+                                                    "type": "string",
+                                                    "format": "uri"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "File size exceeds limit"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/surat/{id}": {
+            "get": {
+                "description": "Get permit details",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "uraian": {
+                                                    "type": "string"
+                                                },
+                                                "no_surat": {
+                                                    "type": "string"
+                                                },
+                                                "kategori": {
+                                                    "type": "string"
+                                                },
+                                                "nama_perusahaan": {
+                                                    "type": "string"
+                                                },
+                                                "tanggal_masuk_berkas": {
+                                                    "type": "string",
+                                                    "format": "date"
+                                                },
+                                                "no_surat_izin_mabes": {
+                                                    "type": "string"
+                                                },
+                                                "status": {
+                                                    "type": "string"
+                                                },
+                                                "dokumen_url": {
+                                                    "type": "string",
+                                                    "format": "uri"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "Surat izin not found"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update permit details",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "uraian": {
+                                        "type": "string"
+                                    },
+                                    "no_surat": {
+                                        "type": "string"
+                                    },
+                                    "kategori": {
+                                        "type": "string"
+                                    },
+                                    "nama_perusahaan": {
+                                        "type": "string"
+                                    },
+                                    "tanggal_masuk_berkas": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "no_surat_izin_mabes": {
+                                        "type": "string"
+                                    },
+                                    "status": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "uraian": {
+                                                    "type": "string"
+                                                },
+                                                "no_surat": {
+                                                    "type": "string"
+                                                },
+                                                "kategori": {
+                                                    "type": "string"
+                                                },
+                                                "nama_perusahaan": {
+                                                    "type": "string"
+                                                },
+                                                "tanggal_masuk_berkas": {
+                                                    "type": "string",
+                                                    "format": "date"
+                                                },
+                                                "no_surat_izin_mabes": {
+                                                    "type": "string"
+                                                },
+                                                "status": {
+                                                    "type": "string"
+                                                },
+                                                "dokumen_url": {
+                                                    "type": "string",
+                                                    "format": "uri"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "errors": "Failed to update data"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete permit",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "message": "Permit deleted successfully"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "Permit not found"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "Failed to delete permit"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
