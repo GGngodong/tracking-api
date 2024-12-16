@@ -368,10 +368,10 @@
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "type": "boolean",
-                                            "errors": {
-                                                "type": "object"
-                                            }
+                                            "type": "boolean"
+                                        },
+                                        "errors": {
+                                            "type": "object"
                                         }
                                     }
                                 }
