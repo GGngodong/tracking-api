@@ -4,16 +4,13 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Database\Seeders\UserSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
-use function PHPUnit\Framework\assertNotNull;
 
 class UserTest extends TestCase
 {
     public function testRegisterSuccess()
     {
-        $this->post('/api/users', [
+        $this->post('/api/dev/users', [
             'username' => 'test',
             'email' => 'test@testmail.com',
             'password' => 'Password@123',
@@ -28,7 +25,7 @@ class UserTest extends TestCase
 
     public function testRegisterFail()
     {
-        $this->post('/api/users', [
+        $this->post('/api/dev/users', [
             'username' => '',
             'email' => '',
             'password' => '',
@@ -51,7 +48,7 @@ class UserTest extends TestCase
     public function testRegisterUserAlreadyExists()
     {
         $this->testRegisterSuccess();
-        $this->post('/api/users', [
+        $this->post('/api/dev/users', [
             'username' => 'test',
             'email' => 'test@testmail.com',
             'password' => 'Password@123',
@@ -72,7 +69,7 @@ class UserTest extends TestCase
     {
 
         $this->seed([UserSeeder::class]);
-        $this->post('/api/users/login', [
+        $this->post('/api/dev/users/login', [
             'username' => 'test',
             'email' => 'test@testmail.com',
             'password' => 'Password@123',
@@ -90,7 +87,7 @@ class UserTest extends TestCase
 
     public function testLoginFailEmailNotFound()
     {
-        $this->post('/api/users/login', [
+        $this->post('/api/dev/users/login', [
             'username' => 'test',
             'email' => 'test@test.com',
             'password' => 'Password@123',
@@ -107,7 +104,7 @@ class UserTest extends TestCase
     public function testGetUserSuccess()
     {
         $this->seed([UserSeeder::class]);
-        $this->get('/api/users/current', [
+        $this->get('/api/dev/users/current', [
             'Authorization' => 'test'
         ])->assertStatus(200)
             ->assertJson([
@@ -121,7 +118,7 @@ class UserTest extends TestCase
     public function testGetUnauthorizedUser()
     {
         $this->seed([UserSeeder::class]);
-        $this->get('/api/users/current')
+        $this->get('/api/dev/users/current')
             ->assertStatus(401)
             ->assertJson([
                 'errors' => [
@@ -134,7 +131,7 @@ class UserTest extends TestCase
     public function testGetInvalidToken()
     {
         $this->seed([UserSeeder::class]);
-        $this->get('/api/users/current', [
+        $this->get('/api/dev/users/current', [
             'Authorization' => 'wrong-token'
         ])->assertStatus(401)
             ->assertJson([
@@ -148,7 +145,7 @@ class UserTest extends TestCase
     {
         $this->seed([UserSeeder::class]);
         $oldUser = User::where('username', 'test')->first();
-        $this->patch('/api/users/current',
+        $this->patch('/api/dev/users/current',
             [
                 'password' => 'Password@123'
             ],
@@ -169,7 +166,7 @@ class UserTest extends TestCase
     {
         $this->seed([UserSeeder::class]);
         $oldUser = User::where('username', 'test')->first();
-        $this->patch('/api/users/current',
+        $this->patch('/api/dev/users/current',
             [
                 'password' => 'NewPassword@123'
             ],
@@ -190,7 +187,7 @@ class UserTest extends TestCase
     {
         $this->seed([UserSeeder::class]);
         $oldUser = User::where('username', 'test')->first();
-        $this->patch('/api/users/current',
+        $this->patch('/api/dev/users/current',
             [
                 'username' => 'TestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTest'
             ],
@@ -210,7 +207,7 @@ class UserTest extends TestCase
     public function testLogoutSuccess()
     {
         $this->seed([UserSeeder::class]);
-        $this->delete('/api/users/logout', [
+        $this->delete(uri: '/api/dev/users/logout',headers: [
             'Authorization' => 'test'
         ])->assertStatus(200)
             ->assertJson([
@@ -223,14 +220,13 @@ class UserTest extends TestCase
     public function testLogoutFailed()
     {
         $this->seed([UserSeeder::class]);
-        $this->delete('/api/users/logout', [
-            'Authorization' => 'test'
+        $this->delete('/api/dev/users/logout', [
+            'Authorization' => 'invaldToken'
         ])->assertStatus(401)
             ->assertJson([
                 'errors' => [
-                    'message' => [
-                        'unauthorized'
-                    ]
+                    'message' =>
+                        'Unauthorized.'
                 ]
             ]);
     }
