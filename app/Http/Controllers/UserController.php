@@ -69,20 +69,22 @@ class UserController extends Controller
         return (new UserResource($user))->response();
     }
 
-    public function update(UserUpdateRequest $request): UserResource{
+    public function update(UserUpdateRequest $request): UserResource
+    {
         $data = $request->validated();
         $user = Auth::user();
-        if(isset($data['username'])){
+        if (isset($data['username'])) {
             $user->username = $data['username'];
         }
-        if(isset($data['password'])){
+        if (isset($data['password'])) {
             $user->password = Hash::make($data['password']);
         }
         $user->save();
         return new UserResource($user);
     }
 
-    public function logout(Request $request): JsonResponse {
+    public function logout(Request $request): JsonResponse
+    {
         $user = Auth::user();
         $user->token = null;
         $user->save();
@@ -90,6 +92,6 @@ class UserController extends Controller
             'data' => [
                 true
             ]
-        ], 204);
+        ], 200);
     }
 }
