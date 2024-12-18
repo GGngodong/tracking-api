@@ -18,10 +18,18 @@ use Illuminate\Support\Facades\Route;
 //    return $request->user();
 //});
 
-Route::post('/users', [\App\Http\Controllers\UserController::class, 'register']);
-Route::post('/users/login', [\App\Http\Controllers\UserController::class, 'login']);
+//Route::post('/users', [\App\Http\Controllers\UserController::class, 'register']);
+//Route::post('/users/login', [\App\Http\Controllers\UserController::class, 'login']);
+//Route::middleware(\App\Http\Middleware\ApiAuthMiddleware::class)->group(function () {
+//    Route::get('/users/current', [\App\Http\Controllers\UserController::class, 'getUser']);
+//    Route::patch('/users/current', [\App\Http\Controllers\UserController::class, 'update']);
+//    Route::delete('/users/logout',[\App\Http\Controllers\UserController::class, 'logout']);
+//});
+//Dev Route
+Route::post('dev/users', [\App\Http\Controllers\UserController::class, 'register']);
+Route::post('dev/users/login', [\App\Http\Controllers\UserController::class, 'login']);
 Route::middleware(\App\Http\Middleware\ApiAuthMiddleware::class)->group(function () {
-    Route::get('/users/current', [\App\Http\Controllers\UserController::class, 'getUser']);
-    Route::patch('/users/current', [\App\Http\Controllers\UserController::class, 'update']);
-    Route::delete('/users/logout',[\App\Http\Controllers\UserController::class, 'logout']);
+    Route::get('dev/users/current', [\App\Http\Controllers\UserController::class, 'getUser']);
+    Route::patch('dev/users/current', [\App\Http\Controllers\UserController::class, 'update']);
+    Route::delete('dev/users/logout',[\App\Http\Controllers\UserController::class, 'logout']);
 });
