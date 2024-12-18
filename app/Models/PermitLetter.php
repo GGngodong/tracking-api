@@ -13,7 +13,13 @@ class PermitLetter extends Model
     public $timestamps = true;
     public $incrementing = true;
     protected $fillable = [
-
+        'uraian',
+        'no_surat',
+        'kategori',
+        'nama_pt',
+        'tanggal_masuk_berkas',
+        'no_produk_mabes',
+        'status_tahapan'
     ];
 
     public function user(): BelongsTo
