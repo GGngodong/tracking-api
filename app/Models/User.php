@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  *
  * @method static \Illuminate\Database\Eloquent\Builder where(string $column, mixed $value)
  * @method static create(array $array)
+ * @method static first()
  *
  */
 class User extends Model implements Authenticatable
@@ -26,12 +27,13 @@ class User extends Model implements Authenticatable
     protected $fillable = [
         'username',
         'email',
-        'password'
+        'password',
+        'role'
     ];
 
     public function permitLetters(): HasMany
     {
-        return $this->hasMany(PermitLetter::class, 'user_id', 'id');
+        return $this->hasMany(PermitLetters::class, 'user_id', 'id');
     }
 
     public function getAuthIdentifierName(): string
