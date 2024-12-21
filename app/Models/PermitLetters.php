@@ -5,7 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class PermitLetter extends Model
+/**
+ * @method static factory()
+ */
+class PermitLetters extends Model
 {
     protected $table = 'permit_letter';
     protected $primaryKey = 'id';
