@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response as ResponseAlias;
 
 
 class UserController extends Controller
@@ -36,6 +37,23 @@ class UserController extends Controller
         return (new UserResource($user))->response()->setStatusCode(201);
     }
 
+//    public function login(UserLoginRequest $request): UserResource
+//    {
+//        $data = $request->validated();
+//        $user = User::where('email', $data['email'])->first();
+//        if (!$user || !Hash::check($data['password'], $user->password)) {
+//            throw new HttpResponseException(response([
+//                'errors' => [
+//                    'message' => ['The email or password is incorrect.'],
+//                ]
+//            ], ResponseAlias::HTTP_UNAUTHORIZED));
+//        }
+//
+//        $user->token = Str::uuid()->toString();
+//        $user->save();
+//
+//        return new UserResource($user);
+//    }
     public function login(UserLoginRequest $request): UserResource
     {
         $data = $request->validated();
@@ -45,14 +63,15 @@ class UserController extends Controller
                 'errors' => [
                     'message' => ['The email or password is incorrect.'],
                 ]
-            ], 401));
+            ], ResponseAlias::HTTP_UNAUTHORIZED));
         }
 
-        $user->token = Str::uuid()->toString();
+        $user->token = 'Bearer ' . Str::uuid()->toString();
         $user->save();
 
         return new UserResource($user);
     }
+
 
     public function getUser(Request $request): JsonResponse
     {
@@ -63,10 +82,39 @@ class UserController extends Controller
                 'errors' => [
                     'message' => 'User not found.'
                 ]
-            ], 404);
+            ], ResponseAlias::HTTP_NOT_FOUND);
         }
 
         return (new UserResource($user))->response();
+    }
+    public function adminOnly(Request $request): JsonResponse
+    {
+        if ($request->get('role') !== 'admin') {
+            return response()->json([
+                'errors' => [
+                    'message' => 'Access denied. Admins only.'
+                ]
+            ], ResponseAlias::HTTP_FORBIDDEN);
+        }
+
+        return response()->json([
+            'data' => 'Welcome, Admin!'
+        ]);
+    }
+
+    public function userOnly(Request $request): JsonResponse
+    {
+        if ($request->get('role') !== 'user') {
+            return response()->json([
+                'errors' => [
+                    'message' => 'Access denied. Users only.'
+                ]
+            ], ResponseAlias::HTTP_FORBIDDEN);
+        }
+
+        return response()->json([
+            'data' => 'Welcome, User!'
+        ]);
     }
 
     public function update(UserUpdateRequest $request): UserResource
@@ -92,6 +140,6 @@ class UserController extends Controller
             'data' => [
                 true
             ]
-        ], 200);
+        ], ResponseAlias::HTTP_OK);
     }
 }
