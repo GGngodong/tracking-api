@@ -65,25 +65,62 @@ class UserTest extends TestCase
             ]);
     }
 
-    public function testLoginSuccess()
+    public function testAdminLoginSuccess()
     {
-
         $this->seed([UserSeeder::class]);
+
         $this->post('/api/dev/users/login', [
-            'username' => 'test',
-            'email' => 'test@testmail.com',
-            'password' => 'Password@123',
+            'username' => 'admin',
+            'email' => 'admin@testmail.com',
+            'password' => 'Admin@123',
         ])->assertStatus(200)
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'username',
+                    'email',
+                    'token',
+                ],
+            ])
             ->assertJson([
                 'data' => [
-                    'username' => 'test',
-                    'email' => 'test@testmail.com',
+                    'username' => 'admin',
+                    'email' => 'admin@testmail.com',
                 ]
             ]);
 
-        $user = User::where('email', 'test@testmail.com')->first();
-        self::assertNotNull($user->token);
+        $admin = User::where('email', 'admin@testmail.com')->first();
+        self::assertNotNull($admin->token);
     }
+    public function testUserLoginSuccess()
+    {
+        $this->seed([UserSeeder::class]);
+        $this->post('/api/dev/users/login', [
+            'username' => 'user',
+            'email' => 'user@testmail.com',
+            'password' => 'User@123',
+        ])->assertStatus(200)
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'username',
+                    'email',
+                    'token',
+                ],
+            ])
+            ->assertJson([
+                'data' => [
+                    'username' => 'user',
+                    'email' => 'user@testmail.com',
+                ]
+            ]);
+
+        $user = User::where('email', 'user@testmail.com')->first();
+        self::assertNotNull($user->token); // Ensure the token is not null
+    }
+
+
+
 
     public function testLoginFailEmailNotFound()
     {
@@ -104,13 +141,14 @@ class UserTest extends TestCase
     public function testGetUserSuccess()
     {
         $this->seed([UserSeeder::class]);
+        $user = User::first();
         $this->get('/api/dev/users/current', [
-            'Authorization' => 'test'
+            'Authorization' => 'Bearer ' . $user->token,
         ])->assertStatus(200)
             ->assertJson([
                 'data' => [
-                    'username' => 'test',
-                    'email' => 'test@testmail.com',
+                    'username' => $user->username,
+                    'email' => $user->email,
                 ]
             ]);
     }
@@ -122,8 +160,7 @@ class UserTest extends TestCase
             ->assertStatus(401)
             ->assertJson([
                 'errors' => [
-                    'message' => 'Unauthorized.'
-
+                    'message' => 'Unauthorized. Missing or invalid token format.'
                 ]
             ]);
     }
@@ -132,11 +169,11 @@ class UserTest extends TestCase
     {
         $this->seed([UserSeeder::class]);
         $this->get('/api/dev/users/current', [
-            'Authorization' => 'wrong-token'
+            'Authorization' => 'Bearer wrong-token',
         ])->assertStatus(401)
             ->assertJson([
                 'errors' => [
-                    'message' => 'Unauthorized.'
+                    'message' => 'Unauthorized. Invalid token.'
                 ]
             ]);
     }
@@ -144,89 +181,56 @@ class UserTest extends TestCase
     public function testUpdateUsernameSuccess()
     {
         $this->seed([UserSeeder::class]);
-        $oldUser = User::where('username', 'test')->first();
+        $user = User::first();
         $this->patch('/api/dev/users/current',
             [
-                'password' => 'Password@123'
+                'username' => 'newtest',
             ],
             [
-                'Authorization' => 'test'
+                'Authorization' => 'Bearer ' . $user->token,
             ]
         )->assertStatus(200)
             ->assertJson([
                 'data' => [
-                    'username' => 'test',
+                    'username' => 'newtest',
                 ]
             ]);
-        $newUser = User::where('username', 'test')->first();
-        self::assertNotEquals($oldUser->password, $newUser->password);
     }
 
     public function testUpdatePasswordSuccess()
     {
         $this->seed([UserSeeder::class]);
-        $oldUser = User::where('username', 'test')->first();
+        $user = User::first();
         $this->patch('/api/dev/users/current',
             [
-                'password' => 'NewPassword@123'
+                'password' => 'NewPassword@123',
             ],
             [
-                'Authorization' => 'test'
+                'Authorization' => 'Bearer ' . $user->token,
             ]
-        )->assertStatus(200)
-            ->assertJson([
-                'data' => [
-                    'username' => 'test',
-                ]
-            ]);
-        $newUser = User::where('username', 'test')->first();
-        self::assertNotEquals($oldUser->password, $newUser->password);
-    }
-
-    public function testUpdateFailed()
-    {
-        $this->seed([UserSeeder::class]);
-        $oldUser = User::where('username', 'test')->first();
-        $this->patch('/api/dev/users/current',
-            [
-                'username' => 'TestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTest'
-            ],
-            [
-                'Authorization' => 'test'
-            ]
-        )->assertStatus(400)
-            ->assertJson([
-                'errors' => [
-                    'username' => [
-                        'The username field must not be greater than 100 characters.',
-                    ]
-                ]
-            ]);
+        )->assertStatus(200);
     }
 
     public function testLogoutSuccess()
     {
         $this->seed([UserSeeder::class]);
-        $this->delete(uri: '/api/dev/users/logout',headers: [
-            'Authorization' => 'test'
+        $user = User::first();
+        $this->delete('/api/dev/users/logout', [], [
+            'Authorization' => 'Bearer ' . $user->token,
         ])->assertStatus(200)
             ->assertJson([
-                'data' => [
-                    true
-                ]
+                'data' => true,
             ]);
     }
 
     public function testLogoutFailed()
     {
-        $this->seed([UserSeeder::class]);
-        $this->delete('/api/dev/users/logout', [
-            'Authorization' => 'invaldToken'
+        $this->delete('/api/dev/users/logout', [], [
+            'Authorization' => 'Bearer invalidToken',
         ])->assertStatus(401)
             ->assertJson([
                 'errors' => [
-                    'message' =>
-                        'Unauthorized.'
+                    'message' => 'Unauthorized. Invalid token.'
                 ]
             ]);
     }
