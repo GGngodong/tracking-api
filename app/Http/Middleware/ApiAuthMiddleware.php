@@ -17,29 +17,56 @@ class ApiAuthMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $token = $request->header('Authorization');
-        $authenticate = true;
-        if (!$token) {
-            $authenticate = false;
 
+        $authHeader = $request->header('Authorization');
+
+        if (!$authHeader || !str_starts_with($authHeader, 'Bearer ')) {
+            return response()->json([
+                'errors' => [
+                    'message' => 'Unauthorized. Missing or invalid token format.',
+                ]
+            ], Response::HTTP_UNAUTHORIZED);
         }
+
+        $token = str_replace('Bearer ', '', $authHeader);
+
 
         $user = User::where('token', $token)->first();
-        if (!$user) {
-            $authenticate = false;
-        } else {
+
+        if ($user) {
             Auth::login($user);
-        }
-
-
-        if ($authenticate) {
+            $request->merge(['role' => $user->role]);
             return $next($request);
         } else {
             return response()->json([
                 'errors' => [
-                    'message' => 'Unauthorized.'
+                    'message' => 'Unauthorized. Invalid token.',
                 ]
-            ])->setStatusCode(Response::HTTP_UNAUTHORIZED);
+            ], Response::HTTP_UNAUTHORIZED);
         }
     }
+//        $token = $request->header('Authorization');
+//        $authenticate = true;
+//        if (!$token) {
+//            $authenticate = false;
+//
+//        }
+//
+//        $user = User::where('token', $token)->first();
+//        if (!$user) {
+//            $authenticate = false;
+//        } else {
+//            Auth::login($user);
+//        }
+//
+//
+//        if ($authenticate) {
+//            return $next($request);
+//        } else {
+//            return response()->json([
+//                'errors' => [
+//                    'message' => 'Unauthorized.'
+//                ]
+//            ])->setStatusCode(Response::HTTP_UNAUTHORIZED);
+//        }
 }
