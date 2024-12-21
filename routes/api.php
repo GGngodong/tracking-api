@@ -31,5 +31,13 @@ Route::post('dev/users/login', [\App\Http\Controllers\UserController::class, 'lo
 Route::middleware(\App\Http\Middleware\ApiAuthMiddleware::class)->group(function () {
     Route::get('dev/users/current', [\App\Http\Controllers\UserController::class, 'getUser']);
     Route::patch('dev/users/current', [\App\Http\Controllers\UserController::class, 'update']);
-    Route::delete('dev/users/logout',[\App\Http\Controllers\UserController::class, 'logout']);
+    Route::delete('dev/users/logout', [\App\Http\Controllers\UserController::class, 'logout']);
+});
+
+Route::middleware(\App\Http\Middleware\ApiPermitLetterMiddleware::class)->group(function () {
+    Route::post('dev/permit-letters/upload', [\App\Http\Controllers\PermitLetterController::class, 'postPermitLetter']);
+    Route::get('dev/permit-letters', [\App\Http\Controllers\PermitLetterController::class, 'getAllPermitLetter']);
+    Route::get('dev/permit-letters/search', [\App\Http\Controllers\PermitLetterController::class, 'searchPermitLetter']);
+    Route::put('dev/permit-letters/{id}', [\App\Http\Controllers\PermitLetterController::class, 'updatePermitLetter']);
+    Route::delete('dev/permit-letters/{id}', [\App\Http\Controllers\PermitLetterController::class, 'deletePermitLetter']);
 });
