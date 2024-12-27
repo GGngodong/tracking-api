@@ -79,13 +79,15 @@ class UserTest extends TestCase
                     'id',
                     'username',
                     'email',
-                    'token',
+                    'role',
+                    'token'
                 ],
             ])
             ->assertJson([
                 'data' => [
                     'username' => 'admin',
                     'email' => 'admin@testmail.com',
+                    'role' => 'ADMIN'
                 ]
             ]);
 
@@ -106,20 +108,20 @@ class UserTest extends TestCase
                     'username',
                     'email',
                     'token',
+                    'role'
                 ],
             ])
             ->assertJson([
                 'data' => [
                     'username' => 'user',
                     'email' => 'user@testmail.com',
+                    'role' => 'USER'
                 ]
             ]);
 
         $user = User::where('email', 'user@testmail.com')->first();
         self::assertNotNull($user->token); // Ensure the token is not null
     }
-
-
 
 
     public function testLoginFailEmailNotFound()
@@ -149,6 +151,7 @@ class UserTest extends TestCase
                 'data' => [
                     'username' => $user->username,
                     'email' => $user->email,
+                    'role' => $user->role,
                 ]
             ]);
     }
