@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Log;
 
 class ApiPermitLetterMiddleware
 {
@@ -17,24 +18,23 @@ class ApiPermitLetterMiddleware
     {
         $user = $request->user();
 
+        Log::info('Middleware User:', ['user' => $user]);
+
         if (!$user) {
             return response()->json([
-                'errors' => [
-                    'message' => 'Unauthorized.'
-                ]
-            ])->setStatusCode(Response::HTTP_UNAUTHORIZED);
+                'errors' => ['message' => 'Unauthorized. User not found.']
+            ], Response::HTTP_UNAUTHORIZED);
         }
 
-        if ($request->isMethod('post') || $request->isMethod('put')) {
-            if ($user->role !== 'admin') {
-                return response()->json([
-                    'errors' => [
-                        'message' => 'Forbidden.'
-                    ]
-                ])->setStatusCode(Response::HTTP_FORBIDDEN);
-            }
+        if ($user->role !== 'ADMIN' && $request->method() != 'GET') {
+            return response()->json([
+                'errors' => [
+                    'message' => 'Unauthorized. You do not have the required permissions to perform this action.',
+                ],
+            ], Response::HTTP_FORBIDDEN);
         }
 
         return $next($request);
     }
+
 }
