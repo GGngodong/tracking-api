@@ -37,83 +37,48 @@ class UserController extends Controller
         return (new UserResource($user))->response()->setStatusCode(201);
     }
 
-//    public function login(UserLoginRequest $request): UserResource
-//    {
-//        $data = $request->validated();
-//        $user = User::where('email', $data['email'])->first();
-//        if (!$user || !Hash::check($data['password'], $user->password)) {
-//            throw new HttpResponseException(response([
-//                'errors' => [
-//                    'message' => ['The email or password is incorrect.'],
-//                ]
-//            ], ResponseAlias::HTTP_UNAUTHORIZED));
-//        }
-//
-//        $user->token = Str::uuid()->toString();
-//        $user->save();
-//
-//        return new UserResource($user);
-//    }
-    public function login(UserLoginRequest $request): UserResource
+    public function login(Request $request): JsonResponse
     {
-        $data = $request->validated();
-        $user = User::where('email', $data['email'])->first();
-        if (!$user || !Hash::check($data['password'], $user->password)) {
-            throw new HttpResponseException(response([
-                'errors' => [
-                    'message' => ['The email or password is incorrect.'],
-                ]
-            ], ResponseAlias::HTTP_UNAUTHORIZED));
-        }
+        $credentials = $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
 
-        $user->token = 'Bearer ' . Str::uuid()->toString();
-        $user->save();
+        $user = User::where('email', $credentials['email'])->first();
 
-        return new UserResource($user);
-    }
-
-
-    public function getUser(Request $request): JsonResponse
-    {
-        $user = Auth::user();
-
-        if (!$user) {
+        if (!$user || !Hash::check($credentials['password'], $user->password)) {
             return response()->json([
-                'errors' => [
-                    'message' => 'User not found.'
-                ]
-            ], ResponseAlias::HTTP_NOT_FOUND);
+                'errors' => ['message' => 'Invalid credentials.'],
+            ], 401);
         }
 
-        return (new UserResource($user))->response();
-    }
-    public function adminOnly(Request $request): JsonResponse
-    {
-        if ($request->get('role') !== 'admin') {
-            return response()->json([
-                'errors' => [
-                    'message' => 'Access denied. Admins only.'
-                ]
-            ], ResponseAlias::HTTP_FORBIDDEN);
-        }
+        $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
-            'data' => 'Welcome, Admin!'
+            'user' => new UserResource($user),
+            'token' => $token,
         ]);
     }
 
-    public function userOnly(Request $request): JsonResponse
+    public function getUser(Request $request): JsonResponse
     {
-        if ($request->get('role') !== 'user') {
+        $user = $request->user();
+
+        if (!$user) {
             return response()->json([
-                'errors' => [
-                    'message' => 'Access denied. Users only.'
-                ]
-            ], ResponseAlias::HTTP_FORBIDDEN);
+                'errors' => ['message' => 'User not found.']
+            ], 404);
         }
 
+        return response()->json(new UserResource($user));
+    }
+
+    public function logout(Request $request): JsonResponse
+    {
+        $request->user()->tokens()->delete();
+
         return response()->json([
-            'data' => 'Welcome, User!'
+            'message' => 'Logged out successfully.'
         ]);
     }
 
@@ -131,15 +96,4 @@ class UserController extends Controller
         return new UserResource($user);
     }
 
-    public function logout(Request $request): JsonResponse
-    {
-        $user = Auth::user();
-        $user->token = null;
-        $user->save();
-        return response()->json([
-            'data' => [
-                true
-            ]
-        ], ResponseAlias::HTTP_OK);
-    }
 }
