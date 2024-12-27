@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('nama_pt',100)->nullable(false);
             $table->string('produk_no_surat_mabes', 100)->nullable()->unique('produk_no_surat_mabes_unique');
             $table->binary('dokumen')->nullable(false);
-            $table->string('dokumen_hash', 64)->nullable(false);
+            $table->string('dokumen_hash', 64)->nullable(false)->default('default_hash_value');
             $table->timestamps();
             $table->unsignedBigInteger('user_id')->nullable(false);
             $table->foreign('user_id')->references('id')->on('users');
