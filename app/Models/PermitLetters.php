@@ -7,10 +7,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @method static factory()
+ * @method static where(string $string, mixed $no_surat)
+ * @method static find($id)
  */
 class PermitLetters extends Model
 {
-    protected $table = 'permit_letter';
+    protected $table = 'permit_letters';
     protected $primaryKey = 'id';
     protected $keyType = 'int';
     public $timestamps = true;
@@ -18,16 +20,11 @@ class PermitLetters extends Model
     protected $fillable = [
         'uraian',
         'no_surat',
-        'kategori',
+        'kategori_permit_letter',
         'nama_pt',
-        'tanggal_masuk_berkas',
-        'no_produk_mabes',
-        'status_tahapan'
+        'tanggal',
+        'produk_no_surat_mabes',
+        'dokumen',
     ];
-
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'user_id', 'id');
-    }
 
 }
