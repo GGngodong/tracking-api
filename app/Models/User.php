@@ -5,7 +5,8 @@ namespace App\Models;
 
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Laravel\Sanctum\HasApiTokens;
+
 
 /**
  * @property string $username
@@ -19,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class User extends Model implements Authenticatable
 {
+    use HasApiTokens;
     protected $table = 'users';
     protected $primaryKey = 'id';
     protected $keyType = 'int';
@@ -31,10 +33,9 @@ class User extends Model implements Authenticatable
         'role'
     ];
 
-    public function permitLetters(): HasMany
-    {
-        return $this->hasMany(PermitLetters::class, 'user_id', 'id');
-    }
+    protected $hidden = [
+        'password'
+    ];
 
     public function getAuthIdentifierName(): string
     {
