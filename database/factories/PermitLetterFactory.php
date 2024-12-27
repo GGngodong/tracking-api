@@ -21,8 +21,8 @@ class PermitLetterFactory extends Factory
             'no_surat' => $this->faker->unique(),
             'kategori' => $this->faker->randomElement(['ops','dtm','dtu','dkk']),
             'nama_pt' => $this->faker->company,
-            'tanggal_masuk_berkas' => $this->faker->date('d-m-Y'),
-            'no_produk_mabes' => $this->faker->unique(),
+            'tanggal' => $this->faker->date('d-m-Y'),
+            'produk_no_surat_mabes' => $this->faker->unique(),
             'status_tahapan' => $this->faker->randomElement(['terverifikasi','dalam_proses','selesai']),
         ];
     }
