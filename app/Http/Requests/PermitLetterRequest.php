@@ -25,7 +25,7 @@ class PermitLetterRequest extends FormRequest
     {
         $rules = [
             'uraian' => ['nullable', 'string', 'max:255'],
-            'no_surat' => ['required', 'string', 'max:255', 'unique:permit_letters,no_surat,' . $this->route('id')],
+            'no_surat' => ['nullable', 'string', 'max:255', 'unique:permit_letters,no_surat,' . $this->route('id')],
             'kategori_permit_letter' => ['nullable', 'string', 'in:ops,dtm,dtu,dkk'],
             'nama_pt' => ['nullable', 'string', 'max:255'],
             'tanggal' => ['nullable', 'date', 'date_format:d-m-Y'],
@@ -34,7 +34,6 @@ class PermitLetterRequest extends FormRequest
         ];
 
         if ($this->isMethod('patch') || $this->isMethod('put')) {
-            // Allow fields to be nullable during update
             $rules['uraian'] = ['nullable', 'string', 'max:255'];
             $rules['no_surat'] = ['nullable', 'string', 'max:255', 'unique:permit_letters,no_surat,' . $this->route('id')];
             $rules['kategori_permit_letter'] = ['nullable', 'string', 'in:ops,dtm,dtu,dkk'];
