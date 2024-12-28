@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Helpers\DateParser;
 use App\Http\Requests\PermitLetterRequest;
+use App\Http\Resources\PermitLetterCollection;
 use App\Http\Resources\PermitLetterResource;
 use App\Models\PermitLetters;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -40,7 +42,8 @@ class PermitLetterController extends Controller
         }
 
         if ($request->hasFile('dokumen')) {
-            $data['dokumen'] = $request->file('dokumen')->store('permit_letters');
+            $filepath = $request->file('dokumen')->store('public/permit_letters');
+            $data['dokumen'] = $filepath;
         }
 
         $permitLetter = PermitLetters::create($data);
@@ -62,6 +65,10 @@ class PermitLetterController extends Controller
             ], Response::HTTP_NOT_FOUND);
         }
 
+        if ($permitLetter->dokumen) {
+            $permitLetter->dokumen_url = Storage::url($permitLetter->dokumen);
+        }
+
         return response()->json([
             'data' => new PermitLetterResource($permitLetter)
         ], Response::HTTP_OK);
@@ -77,12 +84,21 @@ class PermitLetterController extends Controller
             ], Response::HTTP_FORBIDDEN);
         }
 
-        $permitLetter = PermitLetters::all();
-        return PermitLetterResource::collection($permitLetter)->response();
+        $permitLetters = PermitLetters::all()->map(function ($permitLetter) {
+            if ($permitLetter->dokumen) {
+                $permitLetter->dokumen_url = Storage::url($permitLetter->dokumen);
+            }
+            return $permitLetter;
+        });
+        return response()->json([
+            'data' => PermitLetterResource::collection($permitLetters),
+            'message' => 'Permit letters retrieved successfully.'
+        ], Response::HTTP_OK);
     }
 
     public function searchPermitLetter(PermitLetterRequest $request): JsonResponse
     {
+
         $data = $request->validated();
         $query = PermitLetters::query();
 
@@ -93,7 +109,37 @@ class PermitLetterController extends Controller
         if ($request->has('no_surat')) {
             $query->where('no_surat', 'like', '%' . $data['no_surat'] . '%');
         }
-        $permitLetter = $query->paginate(10);
+
+        if ($request->has('nama_pt')) {
+            $query->where('nama_pt', 'like', '%' . $data['nama_pt'] . '%');
+        }
+
+        if ($request->has('tanggal')) {
+            $query->where('tanggal', 'like', '%' . $data['tanggal'] . '%');
+        }
+
+        if ($request->has('kategori_permit_letter')) {
+            $query->where('kategori_permit_letter', 'like', '%' . $data['kategori_permit_letter'] . '%');
+        }
+
+        if ($request->has('produk_no_surat_mabes')) {
+            $query->where('produk_no_surat_mabes', 'like', '%' . $data['produk_no_surat_mabes'] . '%');
+        }
+
+        $permitLetter = $query->paginate(perPage: 10, page: 1);
+        if ($permitLetter->isEmpty()) {
+            return response()->json([
+                'errors' => [
+                    'message' => 'No Permit Letter found.'
+                ]
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        $permitLetter->getCollection()->transform(function ($item) {
+            $item->dokumen_url = $item->dokumen ? Storage::url($item->dokumen) : null;
+            return $item;
+        });
+
         return PermitLetterResource::collection($permitLetter)->response();
     }
 
@@ -139,8 +185,12 @@ class PermitLetterController extends Controller
                 Storage::delete($permitLetter->dokumen);
             }
 
-            $data['dokumen'] = $request->file('dokumen')->store('permit_letters');
+            $filePath = $request->file('dokumen')->store('public/permit_letters');
+            $data['dokumen'] = $filePath;
         }
+
+        $permitLetter->update($data);
+
 
         if (isset($data['uraian'])) {
             $permitLetter->uraian = $data['uraian'];
