@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\UserLoginRequest;
 use App\Http\Requests\UserRegisterRequest;
 use App\Http\Requests\UserUpdateRequest;
 use App\Http\Resources\UserResource;
@@ -11,9 +10,7 @@ use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Response as ResponseAlias;
 
 
 class UserController extends Controller
@@ -48,15 +45,21 @@ class UserController extends Controller
 
         if (!$user || !Hash::check($credentials['password'], $user->password)) {
             return response()->json([
-                'errors' => ['message' => 'Invalid credentials.'],
+                'status' => 'error',
+                'message' => 'Invalid Credentials',
+                'data' => null
             ], 401);
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
-            'user' => new UserResource($user),
-            'token' => $token,
+            'data' => [
+                'user' => new UserResource($user),
+                'token' => $token,
+            ],
+            'status' => 'success',
+            'message' => 'Login Successful'
         ]);
     }
 
@@ -66,11 +69,17 @@ class UserController extends Controller
 
         if (!$user) {
             return response()->json([
-                'errors' => ['message' => 'User not found.']
+                'status' => 'error',
+                'message' => 'User not found.',
+                'data' => null
             ], 404);
         }
 
-        return response()->json(new UserResource($user));
+        return response()->json([
+            'data' => new UserResource($user),
+            'status' => 'success',
+            'message' => 'User found.'
+        ]);
     }
 
     public function logout(Request $request): JsonResponse
