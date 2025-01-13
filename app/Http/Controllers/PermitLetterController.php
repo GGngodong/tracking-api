@@ -23,6 +23,9 @@ class PermitLetterController extends Controller
 
         if (PermitLetters::where('no_surat', $data['no_surat'])->exists()) {
             throw new HttpResponseException(response([
+                'statusCode' => Response::HTTP_BAD_REQUEST,
+                'status' => 'error',
+                'message' => 'The no surat already exists.',
                 'errors' => [
                     'no_surat' => ['The no surat already exists.']
                 ]
@@ -35,6 +38,9 @@ class PermitLetterController extends Controller
             $data['tanggal'] = $parsedDate;
         } else {
             throw new HttpResponseException(response([
+                'statusCode' => Response::HTTP_BAD_REQUEST,
+                'status' => 'error',
+                'message' => 'Invalid tanggal format.',
                 'errors' => [
                     'tanggal' => ['The tanggal format is invalid. Please use dd-mm-yyyy.']
                 ]
@@ -48,9 +54,12 @@ class PermitLetterController extends Controller
 
         $permitLetter = PermitLetters::create($data);
 
-        return (new PermitLetterResource($permitLetter))
-            ->response()
-            ->setStatusCode(Response::HTTP_CREATED);
+        return response()->json([
+            'statusCode' => Response::HTTP_CREATED,
+            'status' => 'success',
+            'message' => 'Permit Letter created successfully.',
+            'data' => new PermitLetterResource($permitLetter)
+        ], Response::HTTP_CREATED);
     }
 
     public function getPermitLetterById($id): JsonResponse
@@ -59,6 +68,9 @@ class PermitLetterController extends Controller
 
         if (!$permitLetter) {
             return response()->json([
+                'statusCode' => Response::HTTP_NOT_FOUND,
+                'status' => 'error',
+                'message' => 'Permit Letter not found.',
                 'errors' => [
                     'message' => 'Permit Letter not found.'
                 ]
@@ -70,6 +82,9 @@ class PermitLetterController extends Controller
         }
 
         return response()->json([
+            'statusCode' => Response::HTTP_OK,
+            'status' => 'success',
+            'message' => 'Permit Letter retrieved successfully.',
             'data' => new PermitLetterResource($permitLetter)
         ], Response::HTTP_OK);
     }
@@ -80,7 +95,10 @@ class PermitLetterController extends Controller
 
         if ($user->role !== 'ADMIN' && $user->role !== 'USER') {
             return response()->json([
-                'errors' => ['message' => 'Unauthorized. You do not have the required permissions to perform this action.']
+                'statusCode' => Response::HTTP_FORBIDDEN,
+                'status' => 'error',
+                'message' => 'Unauthorized. You do not have the required permissions to perform this action.',
+                'errors' => ['message' => 'Unauthorized action.']
             ], Response::HTTP_FORBIDDEN);
         }
 
@@ -91,8 +109,10 @@ class PermitLetterController extends Controller
             return $permitLetter;
         });
         return response()->json([
-            'data' => PermitLetterResource::collection($permitLetters),
-            'message' => 'Permit letters retrieved successfully.'
+            'statusCode' => Response::HTTP_OK,
+            'status' => 'success',
+            'message' => 'Permit letters retrieved successfully.',
+            'data' => PermitLetterResource::collection($permitLetters)
         ], Response::HTTP_OK);
     }
 
@@ -129,8 +149,11 @@ class PermitLetterController extends Controller
         $permitLetter = $query->paginate(perPage: 10, page: 1);
         if ($permitLetter->isEmpty()) {
             return response()->json([
+                'statusCode' => Response::HTTP_NOT_FOUND,
+                'status' => 'error',
+                'message' => 'No Permit Letters found.',
                 'errors' => [
-                    'message' => 'No Permit Letter found.'
+                    'message' => 'No Permit Letters found.'
                 ]
             ], Response::HTTP_NOT_FOUND);
         }
@@ -140,7 +163,12 @@ class PermitLetterController extends Controller
             return $item;
         });
 
-        return PermitLetterResource::collection($permitLetter)->response();
+        return response()->json([
+            'statusCode' => Response::HTTP_OK,
+            'status' => 'success',
+            'message' => 'Permit letters retrieved successfully.',
+            'data' => PermitLetterResource::collection($permitLetter)
+        ], Response::HTTP_OK);
     }
 
     public function updatePermitLetter(PermitLetterRequest $request, int $id): PermitLetterResource
@@ -150,8 +178,11 @@ class PermitLetterController extends Controller
 
         if (!$permitLetter) {
             throw new HttpResponseException(response([
+                'statusCode' => Response::HTTP_BAD_REQUEST,
+                'status' => 'error',
+                'message' => 'Permit Letter not found.',
                 'errors' => [
-                    'message' => ['Permit Letter not found.']
+                    'message' => 'Permit Letter not found.'
                 ]
             ], Response::HTTP_BAD_REQUEST));
         }
@@ -173,6 +204,9 @@ class PermitLetterController extends Controller
                 $data['tanggal'] = $parsedDate;
             } else {
                 throw new HttpResponseException(response([
+                    'statusCode' => Response::HTTP_BAD_REQUEST,
+                    'status' => 'error',
+                    'message' => 'The tanggal format is invalid. Please use dd-mm-yyyy.',
                     'errors' => [
                         'tanggal' => ['The tanggal format is invalid. Please use dd-mm-yyyy.']
                     ]
@@ -240,6 +274,8 @@ class PermitLetterController extends Controller
         }
         $permitLetter->delete();
         return response()->json([
+            'statusCode' => Response::HTTP_OK,
+            'status' => 'success',
             'message' => 'Permit Letter deleted successfully.'
         ], Response::HTTP_OK);
     }

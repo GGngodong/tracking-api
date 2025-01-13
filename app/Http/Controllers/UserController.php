@@ -10,23 +10,40 @@ use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Kreait\Firebase\Auth as FirebaseAuth;
+use Kreait\Firebase\Exception\Auth\AuthError;
+use Kreait\Firebase\Exception\Auth\UserNotFound;
+use Kreait\Firebase\Factory;
 use Symfony\Component\HttpFoundation\JsonResponse;
-
 
 class UserController extends Controller
 {
+    protected FirebaseAuth $firebaseAuth;
+
+    public function __construct()
+    {
+        $path = base_path(config('services.firebase.credentials'));
+        $firebase = (new Factory)->withServiceAccount($path);
+        $this->firebaseAuth = $firebase->createAuth();
+    }
+
     public function register(UserRegisterRequest $request): JsonResponse
     {
         $data = $request->validated();
-        if (User::where('email', $data['email'])->count() == 1) {
+        try {
+            $this->firebaseAuth->getUserByEmail($data['email']);
             throw new HttpResponseException(response([
                 'errors' => [
                     'email' => ['The email has already been taken.', 'Invalid email address.'],
                 ]
             ], 400));
+        } catch (UserNotFound $e) {
         }
-
-
+        $firebaseUser = $this->firebaseAuth->createUser([
+            'email' => $data['email'],
+            'password' => $data['password'],
+            'displayName' => $data['username'],
+        ]);
         $user = new User($data);
         $user->password = Hash::make($data['password']);
         $user->save();
@@ -41,26 +58,35 @@ class UserController extends Controller
             'password' => 'required',
         ]);
 
-        $user = User::where('email', $credentials['email'])->first();
-
-        if (!$user || !Hash::check($credentials['password'], $user->password)) {
+        try {
+            $signInResult = $this->firebaseAuth->signInWithEmailAndPassword($credentials['email'], $credentials['password']);
+            $firebaseIdToken = $signInResult->idToken();
+            $firebaseUser = $this->firebaseAuth->getUserByEmail($credentials['email']);
+            $user = User::firstOrCreate(
+                [
+                    'email' => $firebaseUser->email
+                ],
+                [
+                    'username' => $firebaseUser->displayName, 'password' => bcrypt($credentials['password'])
+                ]
+            );
+            $token = $user->createToken('auth_token')->plainTextToken;
+            $user->token = $token;
+            return response()->json([
+                'statusCode' => 200,
+                'data' => array_merge(
+                    (new UserResource($user))->toArray($request),
+                    ['token' => $token]),
+                'status' => 'success',
+                'message' => 'Login Successful'
+            ]);
+        } catch (AuthError $e) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Invalid Credentials',
                 'data' => null
             ], 401);
         }
-
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        return response()->json([
-            'data' => [
-                'user' => new UserResource($user),
-                'token' => $token,
-            ],
-            'status' => 'success',
-            'message' => 'Login Successful'
-        ]);
     }
 
     public function getUser(Request $request): JsonResponse
@@ -69,6 +95,7 @@ class UserController extends Controller
 
         if (!$user) {
             return response()->json([
+                'statusCode' => 401,
                 'status' => 'error',
                 'message' => 'User not found.',
                 'data' => null

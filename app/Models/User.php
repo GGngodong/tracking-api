@@ -16,6 +16,7 @@ use Laravel\Sanctum\HasApiTokens;
  * @method static \Illuminate\Database\Eloquent\Builder where(string $column, mixed $value)
  * @method static create(array $array)
  * @method static first()
+ * @method static firstOrCreate()
  *
  */
 class User extends Model implements Authenticatable

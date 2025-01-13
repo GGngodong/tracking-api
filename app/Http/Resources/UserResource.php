@@ -5,6 +5,9 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @method relationLoaded(string $string)
+ */
 class UserResource extends JsonResource
 {
     /**
@@ -18,7 +21,7 @@ class UserResource extends JsonResource
             'id' => $this->id,
             'username' => $this->username,
             'email' => $this->email,
-            'token' => $this->whenNotNull($this->token),
+            'token' => $this->when($this->relationLoaded('token'), $this->token),
             'role' => $this->role,
         ];
     }
