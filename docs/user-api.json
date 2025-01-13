@@ -63,24 +63,18 @@
                                         "description": "Failed to register new user",
                                         "value": {
                                             "errors": {
-                                                "username": {
-                                                    "username": [
-                                                        "username must not be blank",
-                                                        "username already registered"
-                                                    ]
-                                                },
-                                                "password": {
-                                                    "password": [
-                                                        "password must contain special characters",
-                                                        "password length is to low"
-                                                    ]
-                                                },
-                                                "email": {
-                                                    "email": [
-                                                        "email already registered",
-                                                        "invalid email address"
-                                                    ]
-                                                }
+                                                "username": [
+                                                    "username must not be blank",
+                                                    "username already registered"
+                                                ],
+                                                "password": [
+                                                    "password must contain special characters",
+                                                    "password length is to low"
+                                                ],
+                                                "email": [
+                                                    "email already registered",
+                                                    "invalid email address"
+                                                ]
                                             }
                                         }
                                     }
@@ -368,10 +362,10 @@
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "type": "boolean",
-                                            "errors": {
-                                                "type": "object"
-                                            }
+                                            "type": "boolean"
+                                        },
+                                        "errors": {
+                                            "type": "object"
                                         }
                                     }
                                 }

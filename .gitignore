@@ -6,10 +6,18 @@
 /storage/*.key
 /vendor
 .env
+.env.example
 .env.backup
 .env.production
 .phpunit.result.cache
 Homestead.json
+database
+storage/app
+storage/framework/cache
+storage/framework/sessions
+storage/framework/testing
+storage/logs
+bootstrap/cache
 Homestead.yaml
 auth.json
 npm-debug.log
@@ -17,3 +25,5 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+tests
+/app/test.http

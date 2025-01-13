@@ -1,0 +1,35 @@
+### REGISTER USER API
+POST http://localhost:8000/api/dev/users
+Content-Type: application/json
+
+{
+    "username": "ikkoy",
+    "email": "ikkoy123@gmail.com",
+    "password": "Password@123",
+    "role": "ADMIN"
+}
+
+### LOGIN USER API
+POST http://localhost:8000/api/dev/users/login
+Content-Type: application/json
+
+{
+    "username": "ikkoy",
+    "email": "ikkoy123@gmail.com",
+    "password": "Password@123"
+}
+
+### GET CURRENT USER API
+GET http://localhost:8000/api/dev/users/current
+Accept: application/json
+Authorization: Bearer 6|mbXtGBG6rozorkcg17Z3hD2fqwxmhkOUdeklEObs4aa824c5
+
+### PATCH PERMIT LETTER API
+PATCH http://localhost:8000/api/dev/permit-letters/edit/406
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer 6|mbXtGBG6rozorkcg17Z3hD2fqwxmhkOUdeklEObs4aa824c5
+
+{
+    "nama_pt" : "PT. IKKOY"
+}
