@@ -192,6 +192,7 @@ class PermitLetterController extends Controller
             'nama_pt',
             'tanggal',
             'no_surat',
+            'status_tahapan',
             'kategori_permit_letter',
             'produk_no_surat_mabes',
             'dokumen',
@@ -244,6 +245,10 @@ class PermitLetterController extends Controller
 
         if (isset($data['kategori_permit_letter'])) {
             $permitLetter->kategori_permit_letter = $data['kategori_permit_letter'];
+        }
+
+        if (isset($data['status_tahapan'])) {
+            $permitLetter->status_tahapan = $data['status_tahapan'];
         }
 
         if (isset($data['produk_no_surat_mabes'])) {

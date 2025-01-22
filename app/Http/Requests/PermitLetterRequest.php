@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -19,14 +20,15 @@ class PermitLetterRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         $rules = [
             'uraian' => ['nullable', 'string', 'max:255'],
             'no_surat' => ['nullable', 'string', 'max:255', 'unique:permit_letters,no_surat,' . $this->route('id')],
-            'kategori_permit_letter' => ['nullable', 'string', 'in:ops,dtm,dtu,dkk'],
+            'kategori_permit_letter' => ['nullable', 'string', 'in:OPS,DTM,DTU,DKK'],
+            'status_tahapan' => ['nullable', 'string', 'max:50'],
             'nama_pt' => ['nullable', 'string', 'max:255'],
             'tanggal' => ['nullable', 'date', 'date_format:d-m-Y'],
             'produk_no_surat_mabes' => ['nullable', 'string', 'max:255', 'unique:permit_letters,produk_no_surat_mabes,' . $this->route('id')],
@@ -36,7 +38,8 @@ class PermitLetterRequest extends FormRequest
         if ($this->isMethod('patch') || $this->isMethod('put')) {
             $rules['uraian'] = ['nullable', 'string', 'max:255'];
             $rules['no_surat'] = ['nullable', 'string', 'max:255', 'unique:permit_letters,no_surat,' . $this->route('id')];
-            $rules['kategori_permit_letter'] = ['nullable', 'string', 'in:ops,dtm,dtu,dkk'];
+            $rules['kategori_permit_letter'] = ['nullable', 'string', 'in:OPS,DTM,DTU,DKK'];
+            $rules['status_tahapan'] = ['nullable', 'string', 'max:50'];
             $rules['nama_pt'] = ['nullable', 'string', 'max:255'];
             $rules['tanggal'] = ['nullable', 'date', 'date_format:d-m-Y'];
             $rules['produk_no_surat_mabes'] = ['nullable', 'string', 'max:255', 'unique:permit_letters,produk_no_surat_mabes,' . $this->route('id')];
@@ -45,7 +48,8 @@ class PermitLetterRequest extends FormRequest
         if ($this->isMethod('post')) {
             $rules['uraian'] = ['required', 'string', 'max:255'];
             $rules['no_surat'] = ['required', 'string', 'max:255', 'unique:permit_letters,no_surat'];
-            $rules['kategori_permit_letter'] = ['required', 'string', 'in:ops,dtm,dtu,dkk'];
+            $rules['kategori_permit_letter'] = ['required', 'string', 'in:OPS,DTM,DTU,DKK'];
+            $rules['status_tahapan'] = ['required', 'string', 'max:50'];
             $rules['nama_pt'] = ['required', 'string', 'max:255'];
             $rules['tanggal'] = ['required', 'date', 'date_format:d-m-Y'];
             $rules['dokumen'] = ['required', 'file', 'mimes:pdf,doc,docx', 'max:10240'];

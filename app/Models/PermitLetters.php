@@ -21,6 +21,7 @@ class PermitLetters extends Model
         'uraian',
         'no_surat',
         'kategori_permit_letter',
+        'status_tahapan',
         'nama_pt',
         'tanggal',
         'produk_no_surat_mabes',
