@@ -37,11 +37,20 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // PERMIT LETTERS
     Route::middleware(\App\Http\Middleware\ApiPermitLetterMiddleware::class)->group(function () {
+        // POST
         Route::post('dev/permit-letters/upload', [\App\Http\Controllers\PermitLetterController::class, 'postPermitLetter']);
+        // GET
         Route::get('dev/permit-letters/{id}', [\App\Http\Controllers\PermitLetterController::class, 'getPermitLetterById'])->where('id', '[0-9]+');
         Route::get('dev/permit-letters/', [\App\Http\Controllers\PermitLetterController::class, 'getAllPermitLetter']);
+        Route::get('dev/permit-letters/rejected', [\App\Http\Controllers\PermitLetterController::class, 'getRejectedPermitLetter']);
+        Route::get('dev/permit-letters/approved', [\App\Http\Controllers\PermitLetterController::class, 'getApprovedPermitLetter']);
+        Route::get('dev/permit-letters/rejected/{id}', [\App\Http\Controllers\PermitLetterController::class, 'getRejectedPermitLetterById'])->where('id', '[0-9]+');
+        Route::get('dev/permit-letters/approved/{id}', [\App\Http\Controllers\PermitLetterController::class, 'getApprovedPermitLetterById'])->where('id', '[0-9]+');
+        Route::get('dev/permit-letters/latest', [\App\Http\Controllers\PermitLetterController::class, 'getLatestPermitLetter']);
         Route::get('dev/permit-letters/search', [\App\Http\Controllers\PermitLetterController::class, 'searchPermitLetter']);
+        // PATCH
         Route::patch('dev/permit-letters/edit/{id}', [\App\Http\Controllers\PermitLetterController::class, 'updatePermitLetter']);
+        // DELETE
         Route::delete('dev/permit-letters/delete/{id}', [\App\Http\Controllers\PermitLetterController::class, 'deletePermitLetter']);
     });
 });
