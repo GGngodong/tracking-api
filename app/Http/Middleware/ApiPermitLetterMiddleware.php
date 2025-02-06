@@ -36,5 +36,4 @@ class ApiPermitLetterMiddleware
 
         return $next($request);
     }
-
 }

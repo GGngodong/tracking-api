@@ -28,31 +28,40 @@ class PermitLetterRequest extends FormRequest
             'uraian' => ['nullable', 'string', 'max:255'],
             'no_surat' => ['nullable', 'string', 'max:255', 'unique:permit_letters,no_surat,' . $this->route('id')],
             'kategori_permit_letter' => ['nullable', 'string', 'in:OPS,DTM,DTU,DKK'],
+            'sub_kategori_permit_letter' => ['nullable', 'string', 'max:255'],
             'status_tahapan' => ['nullable', 'string', 'max:50'],
             'nama_pt' => ['nullable', 'string', 'max:255'],
             'tanggal' => ['nullable', 'date', 'date_format:d-m-Y'],
             'produk_no_surat_mabes' => ['nullable', 'string', 'max:255', 'unique:permit_letters,produk_no_surat_mabes,' . $this->route('id')],
             'dokumen' => ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:10240'],
+            'note' => ['nullable', 'string', 'max:255'],
+            'upload_status' => ['nullable', 'string', 'max:50']
         ];
 
         if ($this->isMethod('patch') || $this->isMethod('put')) {
             $rules['uraian'] = ['nullable', 'string', 'max:255'];
             $rules['no_surat'] = ['nullable', 'string', 'max:255', 'unique:permit_letters,no_surat,' . $this->route('id')];
             $rules['kategori_permit_letter'] = ['nullable', 'string', 'in:OPS,DTM,DTU,DKK'];
+            $rules['sub_kategori_permit_letter'] = ['nullable', 'string', 'max:255'];
             $rules['status_tahapan'] = ['nullable', 'string', 'max:50'];
             $rules['nama_pt'] = ['nullable', 'string', 'max:255'];
             $rules['tanggal'] = ['nullable', 'date', 'date_format:d-m-Y'];
             $rules['produk_no_surat_mabes'] = ['nullable', 'string', 'max:255', 'unique:permit_letters,produk_no_surat_mabes,' . $this->route('id')];
             $rules['dokumen'] = ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:10240'];
+            $rules['note'] = ['nullable', 'string', 'max:255'];
+            $rules['upload_status'] = ['nullable', 'string', 'max:50'];
         }
         if ($this->isMethod('post')) {
             $rules['uraian'] = ['required', 'string', 'max:255'];
             $rules['no_surat'] = ['required', 'string', 'max:255', 'unique:permit_letters,no_surat'];
             $rules['kategori_permit_letter'] = ['required', 'string', 'in:OPS,DTM,DTU,DKK'];
+            $rules['sub_kategori_permit_letter'] = ['required', 'string', 'max:255'];
             $rules['status_tahapan'] = ['required', 'string', 'max:50'];
             $rules['nama_pt'] = ['required', 'string', 'max:255'];
             $rules['tanggal'] = ['required', 'date', 'date_format:d-m-Y'];
             $rules['dokumen'] = ['required', 'file', 'mimes:pdf,doc,docx', 'max:10240'];
+            $rules['note'] = ['nullable', 'string', 'max:255'];
+            $rules['upload_status'] = ['nullable', 'string', 'max:50'];
         }
 
         return $rules;
@@ -64,11 +73,14 @@ class PermitLetterRequest extends FormRequest
             'uraian.required' => 'The uraian field is required.',
             'no_surat.required' => 'The no surat field is required.',
             'kategori_permit_letter.required' => 'The kategori permit letter field is required.',
+            'sub_kategori_permit_letter.required' => 'The sub kategori permit letter field is required.',
             'nama_pt.required' => 'The nama pt field is required.',
             'tanggal.required' => 'The tanggal field is required.',
             'tanggal.date_format' => 'The tanggal must be in the format dd-mm-yyyy.',
             'produk_no_surat_mabes.required' => 'The produk no surat mabes field is required.',
             'dokumen.mimes' => 'The dokumen must be a file of type: pdf, doc, docx, jpeg, png.',
+            'note.required' => 'The note field is required.',
+            'upload_status.required' => 'The upload status field is required.'
         ];
     }
 
