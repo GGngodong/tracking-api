@@ -4,13 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Helpers\DateParser;
 use App\Http\Requests\PermitLetterRequest;
-use App\Http\Resources\PermitLetterCollection;
 use App\Http\Resources\PermitLetterResource;
 use App\Models\PermitLetters;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -26,9 +24,6 @@ class PermitLetterController extends Controller
                 'statusCode' => Response::HTTP_BAD_REQUEST,
                 'status' => 'error',
                 'message' => 'The no surat already exists.',
-                'errors' => [
-                    'no_surat' => ['The no surat already exists.']
-                ]
             ], Response::HTTP_BAD_REQUEST));
         }
 
@@ -41,9 +36,6 @@ class PermitLetterController extends Controller
                 'statusCode' => Response::HTTP_BAD_REQUEST,
                 'status' => 'error',
                 'message' => 'Invalid tanggal format.',
-                'errors' => [
-                    'tanggal' => ['The tanggal format is invalid. Please use dd-mm-yyyy.']
-                ]
             ], Response::HTTP_BAD_REQUEST));
         }
 
@@ -71,9 +63,30 @@ class PermitLetterController extends Controller
                 'statusCode' => Response::HTTP_NOT_FOUND,
                 'status' => 'error',
                 'message' => 'Permit Letter not found.',
-                'errors' => [
-                    'message' => 'Permit Letter not found.'
-                ]
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        if ($permitLetter->dokumen) {
+            $permitLetter->dokumen_url = Storage::url($permitLetter->dokumen);
+        }
+
+        return response()->json([
+            'statusCode' => Response::HTTP_OK,
+            'status' => 'success',
+            'message' => 'Permit Letter retrieved successfully.',
+            'data' => new PermitLetterResource($permitLetter)
+        ], Response::HTTP_OK);
+    }
+
+    public function getLatestPermitLetter(Request $request): JsonResponse
+    {
+        $permitLetter = PermitLetters::orderBy('created_at', 'desc')->first();
+
+        if (!$permitLetter) {
+            return response()->json([
+                'statusCode' => Response::HTTP_NOT_FOUND,
+                'status' => 'error',
+                'message' => 'Permit Letter not found.',
             ], Response::HTTP_NOT_FOUND);
         }
 
@@ -98,7 +111,6 @@ class PermitLetterController extends Controller
                 'statusCode' => Response::HTTP_FORBIDDEN,
                 'status' => 'error',
                 'message' => 'Unauthorized. You do not have the required permissions to perform this action.',
-                'errors' => ['message' => 'Unauthorized action.']
             ], Response::HTTP_FORBIDDEN);
         }
 
@@ -146,15 +158,20 @@ class PermitLetterController extends Controller
             $query->where('produk_no_surat_mabes', 'like', '%' . $data['produk_no_surat_mabes'] . '%');
         }
 
+        if ($request->has('upload_status')) {
+            $query->where('upload_status', 'like', '%' . $data['upload_status'] . '%');
+        }
+
+        if($request->has('sub_kategori_permit_letter')) {
+            $query->where('sub_kategori_permit_letter', 'like', '%' . $data['sub_kategori_permit_letter'] . '%');
+        }
+
         $permitLetter = $query->paginate(perPage: 10, page: 1);
         if ($permitLetter->isEmpty()) {
             return response()->json([
                 'statusCode' => Response::HTTP_NOT_FOUND,
                 'status' => 'error',
                 'message' => 'No Permit Letters found.',
-                'errors' => [
-                    'message' => 'No Permit Letters found.'
-                ]
             ], Response::HTTP_NOT_FOUND);
         }
 
@@ -181,9 +198,6 @@ class PermitLetterController extends Controller
                 'statusCode' => Response::HTTP_BAD_REQUEST,
                 'status' => 'error',
                 'message' => 'Permit Letter not found.',
-                'errors' => [
-                    'message' => 'Permit Letter not found.'
-                ]
             ], Response::HTTP_BAD_REQUEST));
         }
 
@@ -195,7 +209,9 @@ class PermitLetterController extends Controller
             'status_tahapan',
             'kategori_permit_letter',
             'produk_no_surat_mabes',
+            'sub_kategori_permit_letter',
             'dokumen',
+            'note'
         ]);
 
         if ($request->has('tanggal')) {
@@ -208,9 +224,6 @@ class PermitLetterController extends Controller
                     'statusCode' => Response::HTTP_BAD_REQUEST,
                     'status' => 'error',
                     'message' => 'The tanggal format is invalid. Please use dd-mm-yyyy.',
-                    'errors' => [
-                        'tanggal' => ['The tanggal format is invalid. Please use dd-mm-yyyy.']
-                    ]
                 ], Response::HTTP_BAD_REQUEST));
             }
         }
@@ -258,6 +271,19 @@ class PermitLetterController extends Controller
         if (isset($data['dokumen'])) {
             $permitLetter->dokumen = $data['dokumen'];
         }
+
+        if (isset($data['note'])) {
+            $permitLetter->note = $data['note'];
+        }
+
+        if (isset($data['sub_kategori_permit_letter'])) {
+            $permitLetter->sub_kategori_permit_letter = $data['sub_kategori_permit_letter'];
+        }
+
+        if (isset($data['upload_status'])) {
+            $permitLetter->upload_status = $data['upload_status'];
+        }
+
         $data = $request->validated();
         $permitLetter->fill($data);
         $permitLetter->save();
