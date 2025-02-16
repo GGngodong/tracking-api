@@ -27,6 +27,7 @@ class PermitLetterController extends Controller
             ], Response::HTTP_BAD_REQUEST));
         }
 
+        $data['upload_status'] = 'PENDING';
         $parsedDate = DateParser::parseDate($data['tanggal']);
 
         if ($parsedDate) {
@@ -162,7 +163,7 @@ class PermitLetterController extends Controller
             $query->where('upload_status', 'like', '%' . $data['upload_status'] . '%');
         }
 
-        if($request->has('sub_kategori_permit_letter')) {
+        if ($request->has('sub_kategori_permit_letter')) {
             $query->where('sub_kategori_permit_letter', 'like', '%' . $data['sub_kategori_permit_letter'] . '%');
         }
 
@@ -211,7 +212,8 @@ class PermitLetterController extends Controller
             'produk_no_surat_mabes',
             'sub_kategori_permit_letter',
             'dokumen',
-            'note'
+            'note',
+            'upload_status'
         ]);
 
         if ($request->has('tanggal')) {
@@ -309,5 +311,86 @@ class PermitLetterController extends Controller
             'status' => 'success',
             'message' => 'Permit Letter deleted successfully.'
         ], Response::HTTP_OK);
+    }
+
+    public function getApprovedPermitLetter(): JsonResponse
+    {
+
+        $permitLetters = PermitLetters::where('upload_status', 'APPROVED')->get()->map(function ($permitLetter) {
+            if ($permitLetter->dokumen) {
+                $permitLetter->dokumen_url = Storage::url($permitLetter->dokumen);
+            }
+            return $permitLetter;
+        });
+
+
+        if ($permitLetters->isEmpty()) {
+            return response()->json([
+                'statusCode' => Response::HTTP_NOT_FOUND,
+                'status' => 'error',
+                'message' => 'No approved Permit Letters found.',
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        return response()->json([
+            'statusCode' => Response::HTTP_OK,
+            'status' => 'success',
+            'message' => 'Approved Permit Letters retrieved successfully.',
+            'data' => PermitLetterResource::collection($permitLetters)
+        ], Response::HTTP_OK);
+    }
+
+    public function getRejectedPermitLetter(): JsonResponse
+    {
+
+        $permitLetters = PermitLetters::where('upload_status', 'REJECTED')->get()->map(function ($permitLetter) {
+            if ($permitLetter->dokumen) {
+                $permitLetter->dokumen_url = Storage::url($permitLetter->dokumen);
+            }
+            return $permitLetter;
+        });
+
+        if ($permitLetters->isEmpty()) {
+            return response()->json([
+                'statusCode' => Response::HTTP_NOT_FOUND,
+                'status' => 'error',
+                'message' => 'No rejected Permit Letters found.',
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        return response()->json([
+            'statusCode' => Response::HTTP_OK,
+            'status' => 'success',
+            'message' => 'Rejected Permit Letters retrieved successfully.',
+            'data' => PermitLetterResource::collection($permitLetters)
+        ], Response::HTTP_OK);
+
+    }
+
+    public function getPendingPermitLetter(): JsonResponse
+    {
+
+        $permitLetters = PermitLetters::where('upload_status', 'PENDING')->get()->map(function ($permitLetter) {
+            if ($permitLetter->dokumen) {
+                $permitLetter->dokumen_url = Storage::url($permitLetter->dokumen);
+            }
+            return $permitLetter;
+        });
+
+        if ($permitLetters->isEmpty()) {
+            return response()->json([
+                'statusCode' => Response::HTTP_NOT_FOUND,
+                'status' => 'error',
+                'message' => 'No rejected Permit Letters found.',
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        return response()->json([
+            'statusCode' => Response::HTTP_OK,
+            'status' => 'success',
+            'message' => 'Rejected Permit Letters retrieved successfully.',
+            'data' => PermitLetterResource::collection($permitLetters)
+        ], Response::HTTP_OK);
+
     }
 }
