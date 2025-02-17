@@ -30,7 +30,11 @@ class PermitLetters extends Model
         'produk_no_surat_mabes',
         'dokumen',
         'note',
-        'upload_status'
+        'upload_status',
+        'user_id',
     ];
-
+    public function user()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'user_id');
+    }
 }

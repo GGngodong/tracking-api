@@ -132,4 +132,19 @@ class UserController extends Controller
         return new UserResource($user);
     }
 
+    public function updateDeviceToken(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'device_token' => 'required|string',
+        ]);
+
+        $user = $request->user();
+        $user->device_token = $data['device_token'];
+        $user->save();
+
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'Device token updated successfully.',
+        ]);
+    }
 }

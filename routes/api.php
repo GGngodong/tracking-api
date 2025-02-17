@@ -33,6 +33,7 @@ Route::post('/dev/users/login', [\App\Http\Controllers\UserController::class, 'l
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/dev/users/current', [\App\Http\Controllers\UserController::class, 'getUser']);
     Route::patch('/dev/users/current', [\App\Http\Controllers\UserController::class, 'update']);
+    Route::patch('dev/users/update-token', [\App\Http\Controllers\UserController::class, 'updateDeviceToken']);
     Route::delete('/dev/users/logout', [\App\Http\Controllers\UserController::class, 'logout']);
 
     // PERMIT LETTERS

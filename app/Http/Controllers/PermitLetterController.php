@@ -6,11 +6,14 @@ use App\Helpers\DateParser;
 use App\Http\Requests\PermitLetterRequest;
 use App\Http\Resources\PermitLetterResource;
 use App\Models\PermitLetters;
+use App\Notifications\UserPermitLetterNotification;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Notifications;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Notification;
 
 class PermitLetterController extends Controller
 {
@@ -29,6 +32,7 @@ class PermitLetterController extends Controller
 
         $data['upload_status'] = 'PENDING';
         $parsedDate = DateParser::parseDate($data['tanggal']);
+        $data['user_id'] = $request->user()->id;
 
         if ($parsedDate) {
             $data['tanggal'] = $parsedDate;
@@ -46,6 +50,14 @@ class PermitLetterController extends Controller
         }
 
         $permitLetter = PermitLetters::create($data);
+
+        $request->user()->notify(new UserPermitLetterNotification(
+            $permitLetter,
+            'Your permit letter has been uploaded and is awaiting review.'
+        ));
+
+        $admins = \App\Models\User::where('role', 'ADMIN')->get();
+        Notification::send($admins, new \App\Notifications\AdminPermitLetterNotification($permitLetter));
 
         return response()->json([
             'statusCode' => Response::HTTP_CREATED,
@@ -289,6 +301,24 @@ class PermitLetterController extends Controller
         $data = $request->validated();
         $permitLetter->fill($data);
         $permitLetter->save();
+
+        if (isset($data['upload_status'])) {
+            $status = $data['upload_status'];
+            $message = '';
+            if ($status === 'APPROVED') {
+                $message = 'Upload Status is APPROVED. Your Surat Produk Mabes have been released.';
+            } elseif ($status === 'REJECTED') {
+                $message = 'Upload Status is REJECTED. Please review the notes for more details.';
+            } else {
+                $message = 'Your permit letter status has been updated to: ' . $status;
+            }
+            if ($permitLetter->user) {
+                $permitLetter->user->notify(new UserPermitLetterNotification(
+                    $permitLetter,
+                    $message
+                ));
+            }
+        }
         return new PermitLetterResource($permitLetter);
     }
 
