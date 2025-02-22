@@ -21,6 +21,7 @@ class UserResource extends JsonResource
             'id' => $this->id,
             'username' => $this->username,
             'email' => $this->email,
+            'division' => $this->division,
             'token' => $this->when($this->relationLoaded('token'), $this->token),
             'role' => $this->role,
         ];
