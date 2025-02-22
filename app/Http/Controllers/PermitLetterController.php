@@ -6,14 +6,16 @@ use App\Helpers\DateParser;
 use App\Http\Requests\PermitLetterRequest;
 use App\Http\Resources\PermitLetterResource;
 use App\Models\PermitLetters;
+use App\Models\User;
+use App\Notifications\AdminPermitLetterNotification;
 use App\Notifications\UserPermitLetterNotification;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Notifications;
 use Symfony\Component\HttpFoundation\Response;
-use Illuminate\Support\Facades\Notification;
 
 class PermitLetterController extends Controller
 {
@@ -56,8 +58,8 @@ class PermitLetterController extends Controller
             'Your permit letter has been uploaded and is awaiting review.'
         ));
 
-        $admins = \App\Models\User::where('role', 'ADMIN')->get();
-        Notification::send($admins, new \App\Notifications\AdminPermitLetterNotification($permitLetter));
+        $admins = User::where('role', 'ADMIN')->get();
+        Notification::send($admins, new AdminPermitLetterNotification($permitLetter));
 
         return response()->json([
             'statusCode' => Response::HTTP_CREATED,
@@ -302,21 +304,29 @@ class PermitLetterController extends Controller
         $permitLetter->fill($data);
         $permitLetter->save();
 
-        if (isset($data['upload_status'])) {
-            $status = $data['upload_status'];
-            $message = '';
-            if ($status === 'APPROVED') {
-                $message = 'Upload Status is APPROVED. Your Surat Produk Mabes have been released.';
-            } elseif ($status === 'REJECTED') {
-                $message = 'Upload Status is REJECTED. Please review the notes for more details.';
-            } else {
-                $message = 'Your permit letter status has been updated to: ' . $status;
-            }
-            if ($permitLetter->user) {
+        if ($permitLetter->user) {
+            if (isset($data['upload_status'])) {
+                $status = $data['upload_status'];
+                $message = match ($status) {
+                    'APPROVED' => 'Upload Status is APPROVED.',
+                    'REJECTED' => 'Upload Status is REJECTED. Please review the notes for more details.',
+                    default => 'Your permit letter status has been updated to: ' . $status,
+                };
+                $permitLetter->user->notify(new UserPermitLetterNotification($permitLetter, $message));
+            } elseif (isset($data['note'])) {
                 $permitLetter->user->notify(new UserPermitLetterNotification(
                     $permitLetter,
-                    $message
+                    'Your permit letter has been updated. Please review the notes for more details.'
                 ));
+            } elseif (isset($data['status_tahapan'])) {
+                $status = $data['status_tahapan'];
+                $message = match ($status) {
+                    'Draft', 'Verification 3',
+                    'Approval' => 'Your permit letter status has been updated to ' . $status,
+                    'Release' => 'Your permit letter is ' . $status . ', you might want to check it',
+                    default => 'Your permit letter status has been updated.',
+                };
+                $permitLetter->user->notify(new UserPermitLetterNotification($permitLetter, $message));
             }
         }
         return new PermitLetterResource($permitLetter);
