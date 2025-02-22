@@ -18,20 +18,28 @@ class AdminPermitLetterNotification extends Notification
 
     public function via($notifiable)
     {
-        return [FcmChannel::class];
+        return [FcmChannel::class, 'database'];
     }
 
     public function toFcm($notifiable)
     {
-        $username = $this->permitLetter->user ? $this->permitLetter->user->username : 'A user';
-
+        // Optionally, include extra data here if needed.
         return FcmMessage::create()
             ->data([
                 'permit_letter_id' => (string) $this->permitLetter->id,
             ])
             ->notification(FcmNotification::create()
                 ->title('Permit Letter Submitted')
-                ->body("$username has submitted a permit letter and is awaiting your review.")
+                ->body("{$this->permitLetter->user->username} from {$this->permitLetter->user->division} has submitted a permit letter and is awaiting your review.")
             );
+    }
+
+    public function toDatabase($notifiable)
+    {
+        return [
+            'permit_letter_id' => (string) $this->permitLetter->id,
+            'message' => "{$this->permitLetter->user->username} from {$this->permitLetter->user->division} has submitted a permit letter and is awaiting your review.",
+            'type' => 'admin_permit_letter',
+        ];
     }
 }

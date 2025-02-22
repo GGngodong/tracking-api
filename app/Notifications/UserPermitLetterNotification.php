@@ -24,7 +24,7 @@ class UserPermitLetterNotification extends Notification
 
     public function via($notifiable)
     {
-        return [FcmChannel::class];
+        return [FcmChannel::class, 'database'];
     }
 
     public function toFcm($notifiable)
@@ -32,10 +32,21 @@ class UserPermitLetterNotification extends Notification
         return FcmMessage::create()
             ->data([
                 'permit_letter_id' => (string) $this->permitLetter->id,
+                'upload_status' => (string) $this->permitLetter->upload_status,
             ])
             ->notification(FcmNotification::create()
                 ->title('Permit Letter Update')
                 ->body($this->message)
             );
+    }
+
+    public function toDatabase($notifiable)
+    {
+        return [
+            'permit_letter_id' => (string) $this->permitLetter->id,
+            'upload_status' => (string) $this->permitLetter->upload_status,
+            'message' => $this->message,
+            'type' => 'user_permit_letter',
+        ];
     }
 }
