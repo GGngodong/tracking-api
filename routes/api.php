@@ -33,9 +33,12 @@ Route::post('/dev/users/login', [\App\Http\Controllers\UserController::class, 'l
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/dev/users/current', [\App\Http\Controllers\UserController::class, 'getUser']);
     Route::patch('/dev/users/current', [\App\Http\Controllers\UserController::class, 'update']);
-    Route::patch('dev/users/update-token', [\App\Http\Controllers\UserController::class, 'updateDeviceToken']);
+    Route::patch('/dev/users/update-token', [\App\Http\Controllers\UserController::class, 'updateDeviceToken']);
     Route::delete('/dev/users/logout', [\App\Http\Controllers\UserController::class, 'logout']);
-
+    Route::get('/dev/notifications', [\App\Http\Controllers\NotificationController::class, 'index']);
+    Route::patch('/dev/notifications/{id}/read', [\App\Http\Controllers\NotificationController::class, 'markAsRead']);
+    Route::get('/dev/notifications/{id}', [\App\Http\Controllers\NotificationController::class, 'detailNotification']);
+    Route::delete('/dev/notifications/delete/{id}', [\App\Http\Controllers\NotificationController::class, 'deleteNotification']);
     // PERMIT LETTERS
     Route::middleware(\App\Http\Middleware\ApiPermitLetterMiddleware::class)->group(function () {
         // POST
