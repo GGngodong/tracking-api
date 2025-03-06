@@ -113,6 +113,10 @@ class UserController extends Controller
     {
         $request->user()->tokens()->delete();
 
+        $user = $request->user();
+        $user->device_token = null;
+        $user->save();
+
         return response()->json([
             'message' => 'Logged out successfully.'
         ]);
