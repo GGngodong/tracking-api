@@ -321,7 +321,7 @@ class PermitLetterController extends Controller
             } elseif (isset($data['status_tahapan'])) {
                 $status = $data['status_tahapan'];
                 $message = match ($status) {
-                    'Draft', 'Verification 3',
+                    'Draft', 'Verifikasi 3',
                     'Approval' => 'Your permit letter status has been updated to ' . $status,
                     'Release' => 'Your permit letter is ' . $status . ', you might want to check it',
                     default => 'Your permit letter status has been updated.',

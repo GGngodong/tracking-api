@@ -151,4 +151,70 @@ class UserController extends Controller
             'message' => 'Device token updated successfully.',
         ]);
     }
+
+    public function sendPasswordResetEmail(Request $request): JsonResponse
+    {
+        $request->validate([
+            'email' => 'required|email',
+        ]);
+
+        try {
+            $this->firebaseAuth->sendPasswordResetLink($request->email);
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Password reset email sent successfully.',
+            ]);
+        } catch (AuthError $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to send password reset email.',
+            ], 400);
+        }
+    }
+
+    public function sendEmailVerification(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        try {
+            $this->firebaseAuth->sendEmailVerificationLink($user->email);
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Email verification link sent successfully.',
+            ]);
+        } catch (AuthError $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to send email verification link.',
+            ], 400);
+        }
+    }
+
+    public function checkEmailVerified(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        try {
+            $firebaseUser = $this->firebaseAuth->getUserByEmail($user->email);
+            if ($firebaseUser->emailVerified) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Email is verified.',
+                ]);
+            } else {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Email is not verified.',
+                ], 400);
+            }
+        } catch (AuthError $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to check email verification status.',
+            ], 400);
+        }
+    }
+
+
+
 }
