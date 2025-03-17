@@ -27,7 +27,7 @@ class PermitLetterRequest extends FormRequest
         $rules = [
             'uraian' => ['nullable', 'string', 'max:255'],
             'no_surat' => ['nullable', 'string', 'max:255', 'unique:permit_letters,no_surat,' . $this->route('id')],
-            'kategori_permit_letter' => ['nullable', 'string', 'in:OPS,DTM,DTU,DKK'],
+            'kategori_permit_letter' => ['nullable', 'string', 'max:255'],
             'sub_kategori_permit_letter' => ['nullable', 'string', 'max:255'],
             'status_tahapan' => ['nullable', 'string', 'max:50'],
             'nama_pt' => ['nullable', 'string', 'max:255'],
@@ -41,7 +41,7 @@ class PermitLetterRequest extends FormRequest
         if ($this->isMethod('patch') || $this->isMethod('put')) {
             $rules['uraian'] = ['nullable', 'string', 'max:255'];
             $rules['no_surat'] = ['nullable', 'string', 'max:255', 'unique:permit_letters,no_surat,' . $this->route('id')];
-            $rules['kategori_permit_letter'] = ['nullable', 'string', 'in:OPS,DTM,DTU,DKK'];
+            $rules['kategori_permit_letter'] = ['nullable', 'string', 'max:255'];
             $rules['sub_kategori_permit_letter'] = ['nullable', 'string', 'max:255'];
             $rules['status_tahapan'] = ['nullable', 'string', 'max:50'];
             $rules['nama_pt'] = ['nullable', 'string', 'max:255'];
@@ -54,7 +54,7 @@ class PermitLetterRequest extends FormRequest
         if ($this->isMethod('post')) {
             $rules['uraian'] = ['required', 'string', 'max:255'];
             $rules['no_surat'] = ['required', 'string', 'max:255', 'unique:permit_letters,no_surat'];
-            $rules['kategori_permit_letter'] = ['required', 'string', 'in:OPS,DTM,DTU,DKK'];
+            $rules['kategori_permit_letter'] = ['required', 'string','max:255'];
             $rules['sub_kategori_permit_letter'] = ['required', 'string', 'max:255'];
             $rules['status_tahapan'] = ['required', 'string', 'max:50'];
             $rules['nama_pt'] = ['required', 'string', 'max:255'];

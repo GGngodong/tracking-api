@@ -1,6 +1,9 @@
 <?php
 
-use Illuminate\Http\Request;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PermitLetterController;
+use App\Http\Controllers\UserController;
+use App\Http\Middleware\ApiPermitLetterMiddleware;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -28,30 +31,37 @@ use Illuminate\Support\Facades\Route;
 //Dev Route
 
 // USERS
-Route::post('dev/users', [\App\Http\Controllers\UserController::class, 'register']);
-Route::post('/dev/users/login', [\App\Http\Controllers\UserController::class, 'login']);
+Route::post('dev/users', [UserController::class, 'register']);
+Route::post('/dev/users/login', [UserController::class, 'login']);
+Route::post('/dev/users/forgot-password', [UserController::class, 'sendPasswordResetEmail']);
 Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/dev/users/current', [\App\Http\Controllers\UserController::class, 'getUser']);
-    Route::patch('/dev/users/current', [\App\Http\Controllers\UserController::class, 'update']);
-    Route::delete('/dev/users/logout', [\App\Http\Controllers\UserController::class, 'logout']);
-
+    Route::get('/dev/users/check-email-verified', [UserController::class, 'checkEmailVerified']);
+    Route::post('/dev/users/send-email-verification', [UserController::class, 'sendEmailVerification']);
+    Route::get('/dev/users/current', [UserController::class, 'getUser']);
+    Route::patch('/dev/users/current', [UserController::class, 'update']);
+    Route::patch('/dev/users/update-token', [UserController::class, 'updateDeviceToken']);
+    Route::delete('/dev/users/logout', [UserController::class, 'logout']);
+    Route::get('/dev/notifications', [NotificationController::class, 'index']);
+    Route::patch('/dev/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+    Route::get('/dev/notifications/{id}', [NotificationController::class, 'detailNotification']);
+    Route::delete('/dev/notifications/delete/{id}', [NotificationController::class, 'deleteNotification']);
     // PERMIT LETTERS
-    Route::middleware(\App\Http\Middleware\ApiPermitLetterMiddleware::class)->group(function () {
+    Route::middleware(ApiPermitLetterMiddleware::class)->group(function () {
         // POST
-        Route::post('dev/permit-letters/upload', [\App\Http\Controllers\PermitLetterController::class, 'postPermitLetter']);
+        Route::post('dev/permit-letters/upload', [PermitLetterController::class, 'postPermitLetter']);
         // GET
-        Route::get('dev/permit-letters/{id}', [\App\Http\Controllers\PermitLetterController::class, 'getPermitLetterById'])->where('id', '[0-9]+');
-        Route::get('dev/permit-letters/', [\App\Http\Controllers\PermitLetterController::class, 'getAllPermitLetter']);
-        Route::get('dev/permit-letters/rejected', [\App\Http\Controllers\PermitLetterController::class, 'getRejectedPermitLetter']);
-        Route::get('dev/permit-letters/approved', [\App\Http\Controllers\PermitLetterController::class, 'getApprovedPermitLetter']);
-        Route::get('dev/permit-letters/rejected/{id}', [\App\Http\Controllers\PermitLetterController::class, 'getRejectedPermitLetterById'])->where('id', '[0-9]+');
-        Route::get('dev/permit-letters/approved/{id}', [\App\Http\Controllers\PermitLetterController::class, 'getApprovedPermitLetterById'])->where('id', '[0-9]+');
-        Route::get('dev/permit-letters/latest', [\App\Http\Controllers\PermitLetterController::class, 'getLatestPermitLetter']);
-        Route::get('dev/permit-letters/search', [\App\Http\Controllers\PermitLetterController::class, 'searchPermitLetter']);
+        Route::get('dev/permit-letters/{id}', [PermitLetterController::class, 'getPermitLetterById'])->where('id', '[0-9]+');
+        Route::get('dev/permit-letters/', [PermitLetterController::class, 'getAllPermitLetter']);
+        Route::get('dev/permit-letters/rejected', [PermitLetterController::class, 'getRejectedPermitLetter']);
+        Route::get('dev/permit-letters/approved', [PermitLetterController::class, 'getApprovedPermitLetter']);
+        Route::get('dev/permit-letters/approved/{id}', [PermitLetterController::class, 'getApprovedPermitLetterById'])->where('id', '[0-9]+');
+        Route::get('dev/permit-letters/latest', [PermitLetterController::class, 'getLatestPermitLetter']);
+        Route::get('dev/permit-letters/search', [PermitLetterController::class, 'searchPermitLetter']);
+        Route::get('dev/permit-letters/pending', [PermitLetterController::class, 'getPendingPermitLetter']);
         // PATCH
-        Route::patch('dev/permit-letters/edit/{id}', [\App\Http\Controllers\PermitLetterController::class, 'updatePermitLetter']);
+        Route::patch('dev/permit-letters/edit/{id}', [PermitLetterController::class, 'updatePermitLetter']);
         // DELETE
-        Route::delete('dev/permit-letters/delete/{id}', [\App\Http\Controllers\PermitLetterController::class, 'deletePermitLetter']);
+        Route::delete('dev/permit-letters/delete/{id}', [PermitLetterController::class, 'deletePermitLetter']);
     });
 });
 

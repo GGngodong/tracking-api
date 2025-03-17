@@ -6,7 +6,7 @@ namespace App\Models;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 use Laravel\Sanctum\HasApiTokens;
-
+use Illuminate\Notifications\Notifiable;
 
 /**
  * @property string $username
@@ -21,7 +21,7 @@ use Laravel\Sanctum\HasApiTokens;
  */
 class User extends Model implements Authenticatable
 {
-    use HasApiTokens;
+    use HasApiTokens,  Notifiable;
     protected $table = 'users';
     protected $primaryKey = 'id';
     protected $keyType = 'int';
@@ -31,7 +31,8 @@ class User extends Model implements Authenticatable
         'username',
         'email',
         'password',
-        'role'
+        'role',
+        'division'
     ];
 
     protected $hidden = [
@@ -66,5 +67,10 @@ class User extends Model implements Authenticatable
     public function getRememberTokenName(): string
     {
         return 'token';
+    }
+
+    public function routeNotificationForFcm($notification)
+    {
+        return $this->device_token;
     }
 }

@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static where(string $string, mixed $no_surat)
  * @method static find($id)
  * @method static orderBy(string $string, string $string1)
+ * @method static create(mixed $data)
  */
 class PermitLetters extends Model
 {
@@ -29,7 +30,11 @@ class PermitLetters extends Model
         'produk_no_surat_mabes',
         'dokumen',
         'note',
-        'upload_status'
+        'upload_status',
+        'user_id',
     ];
-
+    public function user()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'user_id');
+    }
 }

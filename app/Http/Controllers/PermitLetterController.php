@@ -6,10 +6,15 @@ use App\Helpers\DateParser;
 use App\Http\Requests\PermitLetterRequest;
 use App\Http\Resources\PermitLetterResource;
 use App\Models\PermitLetters;
+use App\Models\User;
+use App\Notifications\AdminPermitLetterNotification;
+use App\Notifications\UserPermitLetterNotification;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
+use Notifications;
 use Symfony\Component\HttpFoundation\Response;
 
 class PermitLetterController extends Controller
@@ -27,7 +32,9 @@ class PermitLetterController extends Controller
             ], Response::HTTP_BAD_REQUEST));
         }
 
+        $data['upload_status'] = 'PENDING';
         $parsedDate = DateParser::parseDate($data['tanggal']);
+        $data['user_id'] = $request->user()->id;
 
         if ($parsedDate) {
             $data['tanggal'] = $parsedDate;
@@ -45,6 +52,14 @@ class PermitLetterController extends Controller
         }
 
         $permitLetter = PermitLetters::create($data);
+
+        $request->user()->notify(new UserPermitLetterNotification(
+            $permitLetter,
+            'Your permit letter has been uploaded and is awaiting review.'
+        ));
+
+        $admins = User::where('role', 'ADMIN')->get();
+        Notification::send($admins, new AdminPermitLetterNotification($permitLetter));
 
         return response()->json([
             'statusCode' => Response::HTTP_CREATED,
@@ -162,7 +177,7 @@ class PermitLetterController extends Controller
             $query->where('upload_status', 'like', '%' . $data['upload_status'] . '%');
         }
 
-        if($request->has('sub_kategori_permit_letter')) {
+        if ($request->has('sub_kategori_permit_letter')) {
             $query->where('sub_kategori_permit_letter', 'like', '%' . $data['sub_kategori_permit_letter'] . '%');
         }
 
@@ -211,7 +226,8 @@ class PermitLetterController extends Controller
             'produk_no_surat_mabes',
             'sub_kategori_permit_letter',
             'dokumen',
-            'note'
+            'note',
+            'upload_status'
         ]);
 
         if ($request->has('tanggal')) {
@@ -287,6 +303,32 @@ class PermitLetterController extends Controller
         $data = $request->validated();
         $permitLetter->fill($data);
         $permitLetter->save();
+
+        if ($permitLetter->user) {
+            if (isset($data['upload_status'])) {
+                $status = $data['upload_status'];
+                $message = match ($status) {
+                    'APPROVED' => 'Upload Status is APPROVED.',
+                    'REJECTED' => 'Upload Status is REJECTED. Please review the notes for more details.',
+                    default => 'Your permit letter status has been updated to: ' . $status,
+                };
+                $permitLetter->user->notify(new UserPermitLetterNotification($permitLetter, $message));
+            } elseif (isset($data['note'])) {
+                $permitLetter->user->notify(new UserPermitLetterNotification(
+                    $permitLetter,
+                    'Your permit letter has been updated. Please review the notes for more details.'
+                ));
+            } elseif (isset($data['status_tahapan'])) {
+                $status = $data['status_tahapan'];
+                $message = match ($status) {
+                    'Draft', 'Verifikasi 3',
+                    'Approval' => 'Your permit letter status has been updated to ' . $status,
+                    'Release' => 'Your permit letter is ' . $status . ', you might want to check it',
+                    default => 'Your permit letter status has been updated.',
+                };
+                $permitLetter->user->notify(new UserPermitLetterNotification($permitLetter, $message));
+            }
+        }
         return new PermitLetterResource($permitLetter);
     }
 
@@ -309,5 +351,86 @@ class PermitLetterController extends Controller
             'status' => 'success',
             'message' => 'Permit Letter deleted successfully.'
         ], Response::HTTP_OK);
+    }
+
+    public function getApprovedPermitLetter(): JsonResponse
+    {
+
+        $permitLetters = PermitLetters::where('upload_status', 'APPROVED')->get()->map(function ($permitLetter) {
+            if ($permitLetter->dokumen) {
+                $permitLetter->dokumen_url = Storage::url($permitLetter->dokumen);
+            }
+            return $permitLetter;
+        });
+
+
+        if ($permitLetters->isEmpty()) {
+            return response()->json([
+                'statusCode' => Response::HTTP_NOT_FOUND,
+                'status' => 'error',
+                'message' => 'No approved Permit Letters found.',
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        return response()->json([
+            'statusCode' => Response::HTTP_OK,
+            'status' => 'success',
+            'message' => 'Approved Permit Letters retrieved successfully.',
+            'data' => PermitLetterResource::collection($permitLetters)
+        ], Response::HTTP_OK);
+    }
+
+    public function getRejectedPermitLetter(): JsonResponse
+    {
+
+        $permitLetters = PermitLetters::where('upload_status', 'REJECTED')->get()->map(function ($permitLetter) {
+            if ($permitLetter->dokumen) {
+                $permitLetter->dokumen_url = Storage::url($permitLetter->dokumen);
+            }
+            return $permitLetter;
+        });
+
+        if ($permitLetters->isEmpty()) {
+            return response()->json([
+                'statusCode' => Response::HTTP_NOT_FOUND,
+                'status' => 'error',
+                'message' => 'No rejected Permit Letters found.',
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        return response()->json([
+            'statusCode' => Response::HTTP_OK,
+            'status' => 'success',
+            'message' => 'Rejected Permit Letters retrieved successfully.',
+            'data' => PermitLetterResource::collection($permitLetters)
+        ], Response::HTTP_OK);
+
+    }
+
+    public function getPendingPermitLetter(): JsonResponse
+    {
+
+        $permitLetters = PermitLetters::where('upload_status', 'PENDING')->get()->map(function ($permitLetter) {
+            if ($permitLetter->dokumen) {
+                $permitLetter->dokumen_url = Storage::url($permitLetter->dokumen);
+            }
+            return $permitLetter;
+        });
+
+        if ($permitLetters->isEmpty()) {
+            return response()->json([
+                'statusCode' => Response::HTTP_NOT_FOUND,
+                'status' => 'error',
+                'message' => 'No rejected Permit Letters found.',
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        return response()->json([
+            'statusCode' => Response::HTTP_OK,
+            'status' => 'success',
+            'message' => 'Rejected Permit Letters retrieved successfully.',
+            'data' => PermitLetterResource::collection($permitLetters)
+        ], Response::HTTP_OK);
+
     }
 }
