@@ -22,12 +22,15 @@ class PermitLetterResource extends JsonResource
             'no_surat' => $this->no_surat,
             'tanggal' => $this->tanggal ? \Carbon\Carbon::parse($this->tanggal)->format('d-m-Y') : null,
             'kategori_permit_letter' => strtoupper($this->kategori_permit_letter),
+            'sub_kategori_permit_letter' => $this->sub_kategori_permit_letter,
+            'upload_status' => $this->upload_status,
+            'status_tahapan' => $this->status_tahapan,
             'nama_pt' => $this->nama_pt,
             'produk_no_surat_mabes' => $this->produk_no_surat_mabes ?? null,
+            'note' => $this->note ?? null,
             'dokumen_url' => $this->dokumen ? url('storage/public/' . str_replace('public/', '', $this->dokumen)) : null,
             'created_at' => $this->created_at ? $this->created_at->toDateTimeString() : null,
             'updated_at' => $this->updated_at ? $this->updated_at->toDateTimeString() : null,
-//            'status_tahapan' => $this->statusTahapan,
         ];
     }
 }
