@@ -31,7 +31,7 @@ use Illuminate\Support\Facades\Route;
 //Dev Route
 
 // USERS
-Route::post('dev/users', [UserController::class, 'register']);
+Route::post('/dev/users', [UserController::class, 'register']);
 Route::post('/dev/users/login', [UserController::class, 'login']);
 Route::post('/dev/users/forgot-password', [UserController::class, 'sendPasswordResetEmail']);
 Route::middleware('auth:sanctum')->group(function () {
