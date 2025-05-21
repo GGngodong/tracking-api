@@ -25,7 +25,7 @@ class UserUpdateRequest extends FormRequest
     {
         return [
             'username' => ['nullable', 'string', 'max:100'],
-            'password' => ['nullable', 'string', 'min:8', 'max:100', 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/'],
+            'password' => ['nullable', 'string', 'min:8', 'max:100'],
         ];
     }
 
