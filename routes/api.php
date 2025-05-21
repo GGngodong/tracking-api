@@ -59,7 +59,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/permit-letters/search', [PermitLetterController::class, 'searchPermitLetter']);
         Route::get('/permit-letters/pending', [PermitLetterController::class, 'getPendingPermitLetter']);
         // PATCH
-        Route::patch('/permit-letters/edit/{id}', [PermitLetterController::class, 'updatePermitLetter']);
+        Route::put('/permit-letters/edit/{id}', [PermitLetterController::class, 'updatePermitLetter']);
         // DELETE
         Route::delete('/permit-letters/delete/{id}', [PermitLetterController::class, 'deletePermitLetter']);
     });
