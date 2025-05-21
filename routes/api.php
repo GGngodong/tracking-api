@@ -58,6 +58,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/permit-letters/latest', [PermitLetterController::class, 'getLatestPermitLetter']);
         Route::get('/permit-letters/search', [PermitLetterController::class, 'searchPermitLetter']);
         Route::get('/permit-letters/pending', [PermitLetterController::class, 'getPendingPermitLetter']);
+        Route::get('/permit-letters/release', [PermitLetterController::class, 'getReleasePermitLetter']);
         // PATCH
         Route::put('/permit-letters/edit/{id}', [PermitLetterController::class, 'updatePermitLetter']);
         // DELETE
