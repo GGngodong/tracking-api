@@ -127,13 +127,11 @@ class PermitLetterController extends Controller
             ], Response::HTTP_NOT_FOUND);
         }
 
-        $permitLetter->dokumen_url = $this->generatePublicUrl($permitLetter->dokumen);
-
         return response()->json([
             'statusCode' => Response::HTTP_OK,
             'status' => 'success',
             'message' => 'Permit Letter retrieved successfully.',
-            'data' => new PermitLetterResource($permitLetter)
+            'data' => new PermitLetterResource($permitLetter),
         ], Response::HTTP_OK);
     }
 
@@ -260,26 +258,32 @@ class PermitLetterController extends Controller
             $data['tanggal'] = $parsedDate;
         }
 
-
         if ($request->hasFile('dokumen')) {
-            // Delete old file if it exists
-            if ($permitLetter->dokumen) {
-                @unlink(rtrim($_SERVER['DOCUMENT_ROOT'], '/') . '/' . $permitLetter->dokumen);
-            }
-
             $file = $request->file('dokumen');
             $filename = time() . '_' . $file->getClientOriginalName();
 
-            $dest = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . '/permit_letters';
-            if (!file_exists($dest)) {
-                mkdir($dest, 0755, true);
-            }
+            $isAdmin = $request->user()->role === 'ADMIN';
+            $isReleasePhase = isset($data['status_tahapan']) && $data['status_tahapan'] === 'Release';
 
-            $file->move($dest, $filename);
-            $data['dokumen'] = 'permit_letters/' . $filename;
+            if ($isAdmin && $isReleasePhase) {
+                $dest = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . '/permit_letters_released';
+                if (!file_exists($dest)) {
+                    mkdir($dest, 0755, true);
+                }
+                $file->move($dest, $filename);
+                $data['released_dokumen'] = 'permit_letters_released/' . $filename;
+            } else {
+                $dest = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . '/permit_letters';
+                if (!file_exists($dest)) {
+                    mkdir($dest, 0755, true);
+                }
+                $file->move($dest, $filename);
+                $data['dokumen'] = 'permit_letters/' . $filename;
+            }
         }
 
         $permitLetter->update($data);
+
         if ($permitLetter->user) {
             if (isset($data['upload_status'])) {
                 $status = $data['upload_status'];
@@ -307,6 +311,7 @@ class PermitLetterController extends Controller
         }
 
         $permitLetter->dokumen_url = $this->generatePublicUrl($permitLetter->dokumen);
+        $permitLetter->released_dokumen_url = $this->generatePublicUrl($permitLetter->released_dokumen);
 
         return new PermitLetterResource($permitLetter);
     }
@@ -421,14 +426,9 @@ class PermitLetterController extends Controller
 
     public function getReleasePermitLetter(): JsonResponse
     {
-        $permitLetter = PermitLetters::where('status_tahapan', 'Release')->get()->map(function ($permitLetter) {
-            if ($permitLetter->dokumen) {
-                $permitLetter->dokumen_url = Storage::url($permitLetter);
-            }
-            return $permitLetter;
-        });
+        $releasedPermitLetters = PermitLetters::where('status_tahapan', 'Release')->get();
 
-        if ($permitLetter->isEmpty()) {
+        if ($releasedPermitLetters->isEmpty()) {
             return response()->json([
                 'statusCode' => Response::HTTP_NOT_FOUND,
                 'status' => 'error',
@@ -440,7 +440,7 @@ class PermitLetterController extends Controller
             'statusCode' => Response::HTTP_OK,
             'status' => 'success',
             'message' => 'Released Permit Letters retrieved successfully.',
-            'data' => PermitLetterResource::collection($permitLetter)
+            'data' => PermitLetterResource::collection($releasedPermitLetters),
         ], Response::HTTP_OK);
     }
 }
