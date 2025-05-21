@@ -31,6 +31,7 @@ class PermitLetters extends Model
         'dokumen',
         'note',
         'upload_status',
+        'released_dokumen',
         'user_id',
     ];
     public function user()
