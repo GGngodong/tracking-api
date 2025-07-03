@@ -124,6 +124,7 @@ class PermitLetterController extends Controller
                 'statusCode' => Response::HTTP_NOT_FOUND,
                 'status' => 'error',
                 'message' => 'Permit Letter not found.',
+                'data' => [], // empty list for consistency
             ], Response::HTTP_NOT_FOUND);
         }
 
@@ -131,7 +132,7 @@ class PermitLetterController extends Controller
             'statusCode' => Response::HTTP_OK,
             'status' => 'success',
             'message' => 'Permit Letter retrieved successfully.',
-            'data' => new PermitLetterResource($permitLetter),
+            'data' => [new PermitLetterResource($permitLetter)], // 👈 wrap in array
         ], Response::HTTP_OK);
     }
 

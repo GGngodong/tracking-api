@@ -29,9 +29,9 @@ class PermitLetters extends Model
         'tanggal',
         'produk_no_surat_mabes',
         'dokumen',
+        'released_dokumen',
         'note',
         'upload_status',
-        'released_dokumen',
         'user_id',
     ];
     public function user()
