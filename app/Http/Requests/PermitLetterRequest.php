@@ -33,7 +33,7 @@ class PermitLetterRequest extends FormRequest
             'nama_pt' => ['nullable', 'string', 'max:255'],
             'tanggal' => ['nullable', 'date', 'date_format:d-m-Y'],
             'produk_no_surat_mabes' => ['nullable', 'string', 'max:255', 'unique:permit_letters,produk_no_surat_mabes,' . $this->route('id')],
-            'dokumen' => ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:10240'],
+            'dokumen' => ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:25600'],
             'note' => ['nullable', 'string', 'max:255'],
             'upload_status' => ['nullable', 'string', 'max:50']
         ];
@@ -47,19 +47,19 @@ class PermitLetterRequest extends FormRequest
             $rules['nama_pt'] = ['nullable', 'string', 'max:255'];
             $rules['tanggal'] = ['nullable', 'date', 'date_format:d-m-Y'];
             $rules['produk_no_surat_mabes'] = ['nullable', 'string', 'max:255', 'unique:permit_letters,produk_no_surat_mabes,' . $this->route('id')];
-            $rules['dokumen'] = ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:10240'];
+            $rules['dokumen'] = ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:25600'];
             $rules['note'] = ['nullable', 'string', 'max:255'];
             $rules['upload_status'] = ['nullable', 'string', 'max:50'];
         }
         if ($this->isMethod('post')) {
             $rules['uraian'] = ['required', 'string', 'max:255'];
             $rules['no_surat'] = ['required', 'string', 'max:255', 'unique:permit_letters,no_surat'];
-            $rules['kategori_permit_letter'] = ['required', 'string','max:255'];
+            $rules['kategori_permit_letter'] = ['required', 'string', 'max:255'];
             $rules['sub_kategori_permit_letter'] = ['required', 'string', 'max:255'];
             $rules['status_tahapan'] = ['required', 'string', 'max:50'];
             $rules['nama_pt'] = ['required', 'string', 'max:255'];
             $rules['tanggal'] = ['required', 'date', 'date_format:d-m-Y'];
-            $rules['dokumen'] = ['required', 'file', 'mimes:pdf,doc,docx', 'max:10240'];
+            $rules['dokumen'] = ['required', 'file', 'mimes:pdf,doc,docx', 'max:25600'];
             $rules['note'] = ['nullable', 'string', 'max:255'];
             $rules['upload_status'] = ['nullable', 'string', 'max:50'];
         }

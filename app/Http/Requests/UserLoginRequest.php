@@ -26,7 +26,7 @@ class UserLoginRequest extends FormRequest
         return [
             'username' => ['required', 'string', 'max:100'],
             'email' => ['required', 'string','email', 'max:50'],
-            'password' => ['required', 'string', 'min:8', 'max:100', 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/'],
+            'password' => ['required', 'string', 'min:8', 'max:100'],
         ];
     }
 

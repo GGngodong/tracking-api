@@ -32,6 +32,7 @@ return [
     ],
 
     'firebase' => [
+        'api_key'     => env('FIREBASE_API_KEY'),
         'credentials' => env('FIREBASE_CREDENTIALS_PATH')
     ]
 ];
