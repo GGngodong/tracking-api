@@ -168,7 +168,7 @@ class PermitLetterController extends Controller
     {
 
         $data = $request->validated();
-        $query = PermitLetters::with(['user', 'editor'])->query();
+        $query = PermitLetters::query()->with(['user', 'editor']);
 
         if ($request->has('uraian')) {
             $query->where('uraian', 'like', '%' . $data['uraian'] . '%');

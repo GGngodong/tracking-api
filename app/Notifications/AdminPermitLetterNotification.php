@@ -23,7 +23,7 @@ class AdminPermitLetterNotification extends Notification
 
     public function toFcm($notifiable)
     {
-        // Optionally, include extra data here if needed.
+
         return FcmMessage::create()
             ->data([
                 'permit_letter_id' => (string) $this->permitLetter->id,
