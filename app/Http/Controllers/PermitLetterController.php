@@ -226,7 +226,7 @@ class PermitLetterController extends Controller
 
     public function updatePermitLetter(PermitLetterRequest $request, int $id): PermitLetterResource
     {
-        $permitLetter = PermitLetters::find($id);
+        $permitLetter = PermitLetters::findOrFail($id);
         if (!$permitLetter) {
             throw new HttpResponseException(response([
                 'statusCode' => Response::HTTP_BAD_REQUEST,
@@ -235,7 +235,6 @@ class PermitLetterController extends Controller
             ], Response::HTTP_BAD_REQUEST));
         }
 
-        $data['updated_by'] = $request->user()->id;
         $data = $request->only([
             'uraian',
             'nama_pt',
@@ -248,7 +247,7 @@ class PermitLetterController extends Controller
             'note',
             'upload_status',
         ]);
-
+        $data['updated_by'] = $request->user()->id;
         if ($request->has('tanggal')) {
             $parsedDate = DateParser::parseDate($data['tanggal']);
             if (!$parsedDate) {
@@ -309,7 +308,7 @@ class PermitLetterController extends Controller
         }
 
        $admins = User::where('role', 'ADMIN')->get();
-    Notification::send(
+        Notification::send(
         $admins,
         new AdminPermitLetterNotification(
             $permitLetter,
@@ -317,7 +316,7 @@ class PermitLetterController extends Controller
         )
     );
 
-$permitLetter->load('user','editor');
+        $permitLetter->load('user','editor');
         $permitLetter->dokumen_url = $this->generatePublicUrl($permitLetter->dokumen);
         $permitLetter->released_dokumen_url = $this->generatePublicUrl($permitLetter->released_dokumen);
 
