@@ -33,7 +33,7 @@ class PermitLetterRequest extends FormRequest
             'nama_pt' => ['nullable', 'string', 'max:255'],
             'tanggal' => ['nullable', 'date', 'date_format:d-m-Y'],
             'produk_no_surat_mabes' => ['nullable', 'string', 'max:255', 'unique:permit_letters,produk_no_surat_mabes,' . $this->route('id')],
-            'dokumen' => ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:25600'],
+            'dokumen' => ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:51200'],
             'note' => ['nullable', 'string', 'max:255'],
             'upload_status' => ['nullable', 'string', 'max:50']
         ];
@@ -47,7 +47,7 @@ class PermitLetterRequest extends FormRequest
             $rules['nama_pt'] = ['nullable', 'string', 'max:255'];
             $rules['tanggal'] = ['nullable', 'date', 'date_format:d-m-Y'];
             $rules['produk_no_surat_mabes'] = ['nullable', 'string', 'max:255', 'unique:permit_letters,produk_no_surat_mabes,' . $this->route('id')];
-            $rules['dokumen'] = ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:25600'];
+            $rules['dokumen'] = ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:51200'];
             $rules['note'] = ['nullable', 'string', 'max:255'];
             $rules['upload_status'] = ['nullable', 'string', 'max:50'];
         }
@@ -59,7 +59,7 @@ class PermitLetterRequest extends FormRequest
             $rules['status_tahapan'] = ['required', 'string', 'max:50'];
             $rules['nama_pt'] = ['required', 'string', 'max:255'];
             $rules['tanggal'] = ['required', 'date', 'date_format:d-m-Y'];
-            $rules['dokumen'] = ['required', 'file', 'mimes:pdf,doc,docx', 'max:25600'];
+            $rules['dokumen'] = ['required', 'file', 'mimes:pdf,doc,docx', 'max:51200'];
             $rules['note'] = ['nullable', 'string', 'max:255'];
             $rules['upload_status'] = ['nullable', 'string', 'max:50'];
         }

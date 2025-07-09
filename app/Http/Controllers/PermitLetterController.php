@@ -95,7 +95,7 @@ class PermitLetterController extends Controller
 
     public function getPermitLetterById($id): JsonResponse
     {
-        $permitLetter = PermitLetters::find($id);
+        $permitLetter = PermitLetters::with(['user', 'editor'])->find($id);
 
         if (!$permitLetter) {
             return response()->json([
@@ -117,7 +117,7 @@ class PermitLetterController extends Controller
 
     public function getLatestPermitLetter(Request $request): JsonResponse
     {
-        $permitLetter = PermitLetters::orderBy('created_at', 'desc')->first();
+        $permitLetter = PermitLetters::with(['user', 'editor'])->orderBy('created_at', 'desc')->first();
 
         if (!$permitLetter) {
             return response()->json([
@@ -138,6 +138,7 @@ class PermitLetterController extends Controller
 
     public function getAllPermitLetter(Request $request): JsonResponse
     {
+    
         $user = $request->user();
 
         if ($user->role !== 'ADMIN' && $user->role !== 'USER') {
@@ -148,7 +149,7 @@ class PermitLetterController extends Controller
             ], Response::HTTP_FORBIDDEN);
         }
 
-        $permitLetters = PermitLetters::all()
+         $permitLetters = PermitLetters::with(['user', 'editor'])->get()
             ->map(function ($pl) {
                 $pl->dokumen_url = $this->generatePublicUrl($pl->dokumen);
                 return $pl;
@@ -167,7 +168,7 @@ class PermitLetterController extends Controller
     {
 
         $data = $request->validated();
-        $query = PermitLetters::query();
+        $query = PermitLetters::with(['user', 'editor'])->query();
 
         if ($request->has('uraian')) {
             $query->where('uraian', 'like', '%' . $data['uraian'] . '%');
@@ -234,6 +235,7 @@ class PermitLetterController extends Controller
             ], Response::HTTP_BAD_REQUEST));
         }
 
+        $data['updated_by'] = $request->user()->id;
         $data = $request->only([
             'uraian',
             'nama_pt',
@@ -293,16 +295,11 @@ class PermitLetterController extends Controller
                     'REJECTED' => 'Upload Status is REJECTED. Please review the notes for more details.',
                     default => 'Your permit letter status has been updated to: ' . $status,
                 };
-            } elseif (isset($data['note'])) {
-                $message = 'Your permit letter has been updated. Please review the notes for more details.';
             } elseif (isset($data['status_tahapan'])) {
-                $status = $data['status_tahapan'];
-                $message = match ($status) {
-                    'Draft', 'Verifikasi 3', 'Approval' => 'Your permit letter status has been updated to ' . $status,
-                    'Release' => 'Your permit letter is ' . $status . ', you might want to check it',
-                    default => 'Your permit letter status has been updated.',
-                };
-            }
+            $msg = 'Your permit letter moved to stage: ' . $data['status_tahapan'];
+        } elseif (isset($data['note'])) {
+            $msg = 'A note was added to your permit letter. Please check.';
+        }
 
             if (isset($message)) {
                 $permitLetter->user->notify(
@@ -311,6 +308,16 @@ class PermitLetterController extends Controller
             }
         }
 
+       $admins = User::where('role', 'ADMIN')->get();
+    Notification::send(
+        $admins,
+        new AdminPermitLetterNotification(
+            $permitLetter,
+            "{$request->user()->username} has edited permit #{$permitLetter->id}."
+        )
+    );
+
+$permitLetter->load('user','editor');
         $permitLetter->dokumen_url = $this->generatePublicUrl($permitLetter->dokumen);
         $permitLetter->released_dokumen_url = $this->generatePublicUrl($permitLetter->released_dokumen);
 
@@ -347,7 +354,7 @@ class PermitLetterController extends Controller
     public function getApprovedPermitLetter(): JsonResponse
     {
 
-        $permitLetters = PermitLetters::where('upload_status', 'APPROVED')->get()->map(function ($permitLetter) {
+        $permitLetters = PermitLetters::where('upload_status', 'APPROVED')->with(['user', 'editor'])->get()->map(function ($permitLetter) {
             if ($permitLetter->dokumen) {
                 $permitLetter->dokumen_url = Storage::url($permitLetter->dokumen);
             }
@@ -374,7 +381,7 @@ class PermitLetterController extends Controller
     public function getRejectedPermitLetter(): JsonResponse
     {
 
-        $permitLetters = PermitLetters::where('upload_status', 'REJECTED')->get()->map(function ($permitLetter) {
+        $permitLetters = PermitLetters::where('upload_status', 'REJECTED')->with(['user', 'editor'])->get()->map(function ($permitLetter) {
             if ($permitLetter->dokumen) {
                 $permitLetter->dokumen_url = Storage::url($permitLetter->dokumen);
             }
@@ -401,7 +408,7 @@ class PermitLetterController extends Controller
     public function getPendingPermitLetter(): JsonResponse
     {
 
-        $permitLetters = PermitLetters::where('upload_status', 'PENDING')->get()->map(function ($permitLetter) {
+        $permitLetters = PermitLetters::where('upload_status', 'PENDING')->with(['user', 'editor'])->get()->map(function ($permitLetter) {
             if ($permitLetter->dokumen) {
                 $permitLetter->dokumen_url = Storage::url($permitLetter->dokumen);
             }
@@ -427,7 +434,7 @@ class PermitLetterController extends Controller
 
     public function getReleasePermitLetter(): JsonResponse
     {
-        $releasedPermitLetters = PermitLetters::where('status_tahapan', 'Release')->get();
+        $releasedPermitLetters = PermitLetters::where('status_tahapan', 'Release')->with(['user', 'editor'])->get();
 
         if ($releasedPermitLetters->isEmpty()) {
             return response()->json([

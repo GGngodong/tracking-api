@@ -33,9 +33,15 @@ class PermitLetters extends Model
         'note',
         'upload_status',
         'user_id',
+        'updated_by'
     ];
-    public function user()
+    public function user() : BelongsTo
     {
         return $this->belongsTo(\App\Models\User::class, 'user_id');
+    }
+
+    public function editor() : BelongsTo 
+    {
+        return $this->belongsTo(\App\Models\User::class, 'updated_by');
     }
 }

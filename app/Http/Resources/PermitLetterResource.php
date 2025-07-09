@@ -31,6 +31,8 @@ class PermitLetterResource extends JsonResource
             'released_dokumen_url' => $this->released_dokumen ? url($this->released_dokumen) : null,
             'created_at' => $this->created_at ? $this->created_at->toDateTimeString() : null,
             'updated_at' => $this->updated_at ? $this->updated_at->toDateTimeString() : null,
+            'uploaded_by' => $this->whenLoaded('user', fn() => $this->user->username),
+            'edited_by' => $this->whenLoaded('editor', fn()=> $this->editor->username),
         ];
     }
 }
