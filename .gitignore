@@ -11,6 +11,7 @@
 .env.production
 .phpunit.result.cache
 Homestead.json
+/public/permit_letters/*.pdf
 storage/app
 storage/framework/cache
 storage/framework/sessions
