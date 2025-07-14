@@ -5,6 +5,7 @@
 /public/storage
 /storage/*.key
 /vendor
+.gitignore~
 .env
 .env~
 .env.example
