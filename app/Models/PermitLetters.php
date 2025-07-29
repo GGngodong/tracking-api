@@ -48,6 +48,6 @@ class PermitLetters extends Model
 
     public function logs() : HasMany 
     {
-        return $this->hasMany(PermitLetterLog::class);
+        return $this->hasMany(PermitLetterLog::class, 'permit_letter_id', 'id');
     }
 }

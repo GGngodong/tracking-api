@@ -42,6 +42,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/permit-letters/', [PermitLetterController::class, 'getAllPermitLetter']);
         Route::get('/permit-letters/rejected', [PermitLetterController::class, 'getRejectedPermitLetter']);
         Route::get('/permit-letters/approved', [PermitLetterController::class, 'getApprovedPermitLetter']);
+        Route::get('/permit-letters/progress', [PermitLetterController::class, 'getProgressPermitLetter']);
         Route::get('/permit-letters/approved/{id}', [PermitLetterController::class, 'getApprovedPermitLetterById'])->where('id', '[0-9]+');
         Route::get('/permit-letters/latest', [PermitLetterController::class, 'getLatestPermitLetter']);
         Route::get('/permit-letters/search', [PermitLetterController::class, 'searchPermitLetter']);

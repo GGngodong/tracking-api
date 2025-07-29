@@ -17,4 +17,10 @@ class PermitLetterLog extends Model
     public function permitLetter() : BelongsTo {
         return $this->belongsTo(PermitLetters::class);
     }
+
+    public function editor(): BelongsTo{
+        return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    
 }

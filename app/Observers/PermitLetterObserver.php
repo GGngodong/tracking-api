@@ -21,14 +21,14 @@ class PermitLetterObserver
      */
     public function updated(PermitLetters $permitLetters): void
     {
-        if ($permitLetters->wasChanged('status_tahapan')) {
-            PermitLetterLog::create([
-                'permit_letter_id' => $permitLetters->id,
-                'status_tahapan' => $permitLetters->status_tahapan,
-                'description' => $this->getStatusDescription($permitLetters->status_tahapan),
-                'updated_by' => Auth::check() ? Auth::user()->name : 'system',
-            ]);
-        }
+        // if ($permitLetters->wasChanged('status_tahapan')) {  
+        //     PermitLetterLog::create([
+        //         'permit_letter_id' => $permitLetters->id,
+        //         'status_tahapan' => $permitLetters->status_tahapan,
+        //         'description' => $this->getStatusDescription($permitLetters->status_tahapan),
+        //         'updated_by'       => $permitLetters->updated_by,
+        //     ]);
+        // }
     }
 
     /**
@@ -55,21 +55,22 @@ class PermitLetterObserver
         //
     }
 
-    private function getStatusDescription(int $status): string 
+    private function getStatusDescription($status)
     {
-        return match ($status) {
-            'Saran Polres' => 'Surat dalam tahap saran dari Polres',
-            'Rekom. Polda' => 'Menunggu rekomendasi dari Polda',
-            'Verifikasi 1' => 'Dokumen sedang diverifikasi oleh admin pertama',
-            'Submit' => 'Dokumen telah disubmit oleh pemohon',
-            'Draft' => 'Dokumen masih dalam tahap draft',
-            'Penelitian Dokumen' => 'Dokumen sedang diteliti',
-            'Verifikasi 2' => 'Verifikasi kedua sedang berlangsung',
-            'Verifikasi 3' => 'Verifikasi ketiga sedang berlangsung',
-            'Approval' => 'Dokumen menunggu approval',
-            'Penomoran' => 'Surat sedang dinomori',
-            'Release' => 'Surat telah diterbitkan',
-            default => 'Status diperbarui',
-        };
+        // return match ($status) {
+        //     'Upload' => 'Pemohon telah menggungah surat.',
+        //     'Saran Polres' => 'Surat dalam tahap saran dari Polres',
+        //     'Rekom. Polda' => 'Menunggu rekomendasi dari Polda',
+        //     'Verifikasi 1' => 'Dokumen sedang diverifikasi oleh admin pertama',
+        //     'Submit' => 'Dokumen telah disubmit oleh pemohon',
+        //     'Draft' => 'Dokumen masih dalam tahap draft',
+        //     'Penelitian Dokumen' => 'Dokumen sedang diteliti',
+        //     'Verifikasi 2' => 'Verifikasi kedua sedang berlangsung',
+        //     'Verifikasi 3' => 'Verifikasi ketiga sedang berlangsung',
+        //     'Approval' => 'Dokumen menunggu approval',
+        //     'Penomoran' => 'Surat sedang dinomori',
+        //     'Release' => 'Surat telah diterbitkan',
+        //     default => 'Status diperbarui',
+        // };
     }
 }

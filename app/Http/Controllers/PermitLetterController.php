@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Helpers\DateParser;
 use App\Http\Requests\PermitLetterRequest;
+use App\Http\Resources\PermitLetterLogResource;
 use App\Http\Resources\PermitLetterResource;
 use App\Models\PermitLetters;
 use App\Models\User;
@@ -33,6 +34,7 @@ class PermitLetterController extends Controller
         }
 
         $data['upload_status'] = 'PENDING';
+        $data['status_tahapan'] = 'Upload';
         $parsedDate = DateParser::parseDate($data['tanggal']);
         $data['user_id'] = $request->user()->id;
 
@@ -63,6 +65,13 @@ class PermitLetterController extends Controller
         }
 
         $permitLetter = PermitLetters::create($data);
+
+        $permitLetter->logs()->create([
+            'status_tahapan' => 'Upload',
+            'description' => $this->getStatusDescription('Upload'),
+            'updated_by' => $request->user()->id,
+        ]);
+
 
         $request->user()->notify(new UserPermitLetterNotification(
             $permitLetter,
@@ -138,7 +147,7 @@ class PermitLetterController extends Controller
 
     public function getAllPermitLetter(Request $request): JsonResponse
     {
-    
+
         $user = $request->user();
 
         if ($user->role !== 'ADMIN' && $user->role !== 'USER') {
@@ -149,7 +158,7 @@ class PermitLetterController extends Controller
             ], Response::HTTP_FORBIDDEN);
         }
 
-         $permitLetters = PermitLetters::with(['user', 'editor'])->get()
+        $permitLetters = PermitLetters::with(['user', 'editor'])->get()
             ->map(function ($pl) {
                 $pl->dokumen_url = $this->generatePublicUrl($pl->dokumen);
                 return $pl;
@@ -285,20 +294,30 @@ class PermitLetterController extends Controller
         }
 
         $permitLetter->update($data);
-
-        if ($permitLetter->user) {
-            if (isset($data['upload_status'])) {
-                $status = $data['upload_status'];
-                $message = match ($status) {
-                    'APPROVED' => 'Upload Status is APPROVED.',
-                    'REJECTED' => 'Upload Status is REJECTED. Please review the notes for more details.',
-                    default => 'Your permit letter status has been updated to: ' . $status,
-                };
-            } elseif (isset($data['status_tahapan'])) {
-            $msg = 'Your permit letter moved to stage: ' . $data['status_tahapan'];
-        } elseif (isset($data['note'])) {
-            $msg = 'A note was added to your permit letter. Please check.';
+        if (array_key_exists('status_tahapan', $data)) {
+            $permitLetter->logs()->create([
+                'status_tahapan' => $data['status_tahapan'],
+                'description' => $this->getStatusDescription($data['status_tahapan']),
+                'updated_by' => $request->user()->id,
+            ]);
         }
+        if ($permitLetter->user) {
+            $status = $data['upload_status'] ?? null;
+            $tahapan = $data['status_tahapan'] ?? null;
+
+            if ($status) {
+                $message = match ($status) {
+                    'APPROVED' => 'Your permit has been approved.',
+                    'REJECTED' => 'Your permit was rejected. Please check the notes for details.',
+                    'PROGRESS' => "Your permit is currently in progress at stage: {$tahapan}.",
+                    'RELEASE' => 'Your permit has been released and the process is complete.',
+                    default => "Your permit upload status is now: {$status}.",
+                };
+            } elseif (isset($data['note'])) {
+                $message = 'A note has been added to your permit. Please review it.';
+            } elseif ($tahapan) {
+                $message = "Your permit has moved to stage: {$tahapan}.";
+            }
 
             if (isset($message)) {
                 $permitLetter->user->notify(
@@ -307,16 +326,17 @@ class PermitLetterController extends Controller
             }
         }
 
-       $admins = User::where('role', 'ADMIN')->get();
-        Notification::send(
-        $admins,
-        new AdminPermitLetterNotification(
-            $permitLetter,
-            "{$request->user()->username} has edited permit #{$permitLetter->id}."
-        )
-    );
 
-        $permitLetter->load('user','editor');
+        $admins = User::where('role', 'ADMIN')->get();
+        Notification::send(
+            $admins,
+            new AdminPermitLetterNotification(
+                $permitLetter,
+                "{$request->user()->username} has edited permit #{$permitLetter->id}."
+            )
+        );
+
+        $permitLetter->load('user', 'editor');
         $permitLetter->dokumen_url = $this->generatePublicUrl($permitLetter->dokumen);
         $permitLetter->released_dokumen_url = $this->generatePublicUrl($permitLetter->released_dokumen);
 
@@ -431,6 +451,33 @@ class PermitLetterController extends Controller
 
     }
 
+    public function getProgressPermitLetter(): JsonResponse
+    {
+
+        $permitLetters = PermitLetters::where('upload_status', 'PROGRESS')->with(['user', 'editor'])->get()->map(function ($permitLetter) {
+            if ($permitLetter->dokumen) {
+                $permitLetter->dokumen_url = Storage::url($permitLetter->dokumen);
+            }
+            return $permitLetter;
+        });
+
+        if ($permitLetters->isEmpty()) {
+            return response()->json([
+                'statusCode' => Response::HTTP_NOT_FOUND,
+                'status' => 'error',
+                'message' => 'No On Progress Permit Letters found.',
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        return response()->json([
+            'statusCode' => Response::HTTP_OK,
+            'status' => 'success',
+            'message' => 'On Progress Permit Letters retrieved successfully.',
+            'data' => PermitLetterResource::collection($permitLetters)
+        ], Response::HTTP_OK);
+
+    }
+
     public function getReleasePermitLetter(): JsonResponse
     {
         $releasedPermitLetters = PermitLetters::where('status_tahapan', 'Release')->with(['user', 'editor'])->get();
@@ -451,21 +498,36 @@ class PermitLetterController extends Controller
         ], Response::HTTP_OK);
     }
 
-    public function getPermitLogs($id): JsonResponse {
+
+    public function getPermitLogs($id): JsonResponse
+    {
         $permit = PermitLetters::findOrFail($id);
-        $logs = $permit->logs()->orderBy('created_at','asc')->get([
-            'id',
-            'status_tahapan',
-            'description',
-            'updated_at'
-        ]);
+        $logs = $permit->logs()->with('editor')->orderBy('created_at', 'asc')->get();
 
         return response()->json([
             'statusCode' => Response::HTTP_OK,
-            'status'=> 'success',
+            'status' => 'success',
             'message' => 'Logs retrieved successfully.',
-            'data' => $logs,
+            'data' => PermitLetterLogResource::collection($logs)
         ]);
 
+    }
+    private function getStatusDescription($status)
+    {
+        return match ($status) {
+            'Upload' => 'Pemohon telah menggungah surat.',
+            'Saran Polres' => 'Surat dalam tahap saran dari Polres',
+            'Rekom. Polda' => 'Menunggu rekomendasi dari Polda',
+            'Verifikasi 1' => 'Dokumen sedang diverifikasi oleh admin pertama',
+            'Submit' => 'Dokumen telah disubmit oleh pemohon',
+            'Draft' => 'Dokumen masih dalam tahap draft',
+            'Penelitian Dokumen' => 'Dokumen sedang diteliti',
+            'Verifikasi 2' => 'Verifikasi kedua sedang berlangsung',
+            'Verifikasi 3' => 'Verifikasi ketiga sedang berlangsung',
+            'Approval' => 'Dokumen menunggu approval',
+            'Penomoran' => 'Surat sedang dinomori',
+            'Release' => 'Surat telah diterbitkan',
+            default => 'Status diperbarui',
+        };
     }
 }
