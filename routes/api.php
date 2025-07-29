@@ -37,6 +37,7 @@ Route::middleware('auth:sanctum')->group(function () {
         // POST
         Route::post('/permit-letters/upload', [PermitLetterController::class, 'postPermitLetter']);
         // GET
+        Route::get('/permit-letters/{id}/logs', [PermitLetterController::class,'getPermitLogs']);
         Route::get('/permit-letters/{id}', [PermitLetterController::class, 'getPermitLetterById'])->where('id', '[0-9]+');
         Route::get('/permit-letters/', [PermitLetterController::class, 'getAllPermitLetter']);
         Route::get('/permit-letters/rejected', [PermitLetterController::class, 'getRejectedPermitLetter']);
