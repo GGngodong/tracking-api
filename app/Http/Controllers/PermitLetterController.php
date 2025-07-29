@@ -450,4 +450,22 @@ class PermitLetterController extends Controller
             'data' => PermitLetterResource::collection($releasedPermitLetters),
         ], Response::HTTP_OK);
     }
+
+    public function getPermitLogs($id): JsonResponse {
+        $permit = PermitLetters::findOrFail($id);
+        $logs = $permit->logs()->orderBy('created_at','asc')->get([
+            'id',
+            'status_tahapan',
+            'description',
+            'updated_at'
+        ]);
+
+        return response()->json([
+            'statusCode' => Response::HTTP_OK,
+            'status'=> 'success',
+            'message' => 'Logs retrieved successfully.',
+            'data' => $logs,
+        ]);
+
+    }
 }

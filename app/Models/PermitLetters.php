@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @method static factory()
@@ -43,5 +44,10 @@ class PermitLetters extends Model
     public function editor() : BelongsTo 
     {
         return $this->belongsTo(\App\Models\User::class, 'updated_by');
+    }
+
+    public function logs() : HasMany 
+    {
+        return $this->hasMany(PermitLetterLog::class);
     }
 }

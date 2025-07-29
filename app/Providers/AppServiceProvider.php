@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\PermitLetters;
+use App\Observers\PermitLetterObserver;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +21,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        PermitLetters::observe(PermitLetterObserver::class);
     }
 }
