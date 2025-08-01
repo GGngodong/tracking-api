@@ -516,18 +516,18 @@ class PermitLetterController extends Controller
     {
         return match ($status) {
             'Upload' => 'Pemohon telah menggungah surat.',
-            'Saran Polres' => 'Surat dalam tahap saran dari Polres',
-            'Rekom. Polda' => 'Menunggu rekomendasi dari Polda',
-            'Verifikasi 1' => 'Dokumen sedang diverifikasi oleh admin pertama',
-            'Submit' => 'Dokumen telah disubmit oleh pemohon',
-            'Draft' => 'Dokumen masih dalam tahap draft',
-            'Penelitian Dokumen' => 'Dokumen sedang diteliti',
-            'Verifikasi 2' => 'Verifikasi kedua sedang berlangsung',
-            'Verifikasi 3' => 'Verifikasi ketiga sedang berlangsung',
-            'Approval' => 'Dokumen menunggu approval',
-            'Penomoran' => 'Surat sedang dinomori',
-            'Release' => 'Surat telah diterbitkan',
-            default => 'Status diperbarui',
+            'Saran Polres' => 'Surat dalam tahap saran dari Polres.',
+            'Rekom. Polda' => 'Menunggu rekomendasi dari Polda.',
+            'Verifikasi 1' => 'Dokumen sedang diverifikasi oleh admin Hublem.',
+            'Submit' => 'Dokumen telah disubmit ke loket.',
+            'Draft' => 'Dokumen masih dalam tahap draft.',
+            'Penelitian Dokumen' => 'Dokumen sedang diteliti.',
+            'Verifikasi 2' => 'Verifikasi kedua sedang berlangsung.',
+            'Verifikasi 3' => 'Verifikasi ketiga sedang berlangsung.',
+            'Approval' => 'Dokumen menunggu tanda tangan.',
+            'Penomoran' => 'Surat sedang dinomori.',
+            'Release' => 'Surat telah diterbitkan.',
+            default => 'Status diperbarui.',
         };
     }
 }
